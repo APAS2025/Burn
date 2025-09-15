@@ -11,7 +11,7 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
         .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mb-4 text-white">$1</h1>')
         .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-6 mb-3 text-white">$1</h2>')
         .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2 text-slate-200">$1</h3>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-cyan-300">$1</strong>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-emerald-400">$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/^- (.*$)/gim, '<li class="ml-6 list-disc">$1</li>')
         .replace(/\n/g, '<br />');
@@ -46,8 +46,8 @@ const ShareButton: React.FC<{ text: string; withLabel?: boolean }> = ({ text, wi
       label: 'Copy to clipboard',
       icon: <ClipboardIcon className={iconSize} />,
       buttonText: 'Copy Text',
-      labelClasses: 'bg-white/5 border-white/10 hover:bg-white/20 text-slate-200',
-      iconClasses: 'text-slate-400 hover:text-cyan-300',
+      labelClasses: 'bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200',
+      iconClasses: 'text-slate-400 hover:text-emerald-400',
     },
     copied: {
       label: 'Copied!',
@@ -115,9 +115,9 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
             role="dialog"
         >
             <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-                <div className="aspect-[9/10] bg-slate-900 rounded-3xl border border-cyan-500/30 p-6 flex flex-col text-white shadow-2xl shadow-cyan-500/10" style={{ backgroundImage: 'radial-gradient(at 47% 33%, hsl(203.00, 39%, 20%) 0, transparent 59%), radial-gradient(at 82% 65%, hsl(287.00, 39%, 25%) 0, transparent 55%)' }}>
+                <div className="aspect-[9/10] bg-slate-900 rounded-3xl border border-emerald-500/30 p-6 flex flex-col text-white shadow-2xl shadow-emerald-500/10" style={{ backgroundImage: 'linear-gradient(to bottom right, #0f172a, #1e293b)' }}>
                     <div className="text-center">
-                        <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-pink-400">Calorie Reality Check</h2>
+                        <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">Calorie Reality Check</h2>
                     </div>
                     
                     <div className="flex-1 flex flex-col justify-center items-center my-4">
@@ -130,8 +130,8 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
                         </div>
                         <div className="text-6xl font-light text-slate-600 my-2">vs</div>
                          <div className="text-center">
-                            <div className="text-sm text-cyan-300">Time to Burn</div>
-                            <div className="text-4xl font-bold text-cyan-300 flex items-center gap-2">
+                            <div className="text-sm text-emerald-300">Time to Burn</div>
+                            <div className="text-4xl font-bold text-emerald-300 flex items-center gap-2">
                                 <FlameIcon className="w-6 h-6" />
                                 {formatMinutes(burnTime)}
                             </div>
@@ -139,11 +139,11 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
                     </div>
 
                     <div className="space-y-2 mb-4">
-                        <div className="w-full bg-white/10 rounded-full h-3">
+                        <div className="w-full bg-slate-700 rounded-full h-3">
                             <div className="bg-slate-500 h-3 rounded-full" style={{ width: `${eatBarWidth}%` }}></div>
                         </div>
-                        <div className="w-full bg-white/10 rounded-full h-3">
-                            <div className="bg-gradient-to-r from-cyan-500 to-pink-500 h-3 rounded-full" style={{ width: '100%' }}></div>
+                        <div className="w-full bg-slate-700 rounded-full h-3">
+                            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-3 rounded-full" style={{ width: '100%' }}></div>
                         </div>
                     </div>
 
@@ -151,7 +151,7 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
                         {totals.calories_kcal.toLocaleString()} <span className="text-base font-normal text-slate-400">Total Calories</span>
                     </div>
 
-                    <div className="text-xs text-slate-500 text-center mt-2 border-t border-white/10 pt-3">
+                    <div className="text-xs text-slate-500 text-center mt-2 border-t border-slate-700 pt-3">
                         {items.map(item => item.name).join(' • ')}
                     </div>
 
@@ -171,7 +171,7 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
             </div>
             <button 
                 onClick={onClose} 
-                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-all transform hover:scale-110"
                 aria-label="Close modal"
             >
                 <XIcon className="w-8 h-8" />
@@ -192,7 +192,10 @@ const ResultItemCard: React.FC<{
     const burnRatio = Math.max(0, (item.burn_minutes / (item.burn_minutes + item.eat_minutes)) * 100);
 
     return (
-        <div className="bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10">
+        <div
+            className="bg-slate-800/40 backdrop-blur-xl p-4 rounded-2xl border border-slate-700/80 animate-pop-in transition-all duration-200 hover:scale-[1.02] hover:shadow-lg dark:hover:shadow-emerald-900/50"
+            style={{ animationDelay: `${index * 80}ms` }}
+        >
             <div className="flex justify-between items-start">
                 <div>
                     <h4 className="font-bold text-white text-lg">{item.name}</h4>
@@ -204,7 +207,7 @@ const ResultItemCard: React.FC<{
                         disabled={isSelectionDisabled}
                         title={isSelected ? 'Remove from comparison' : 'Add to comparison'}
                         aria-label={isSelected ? 'Remove from comparison' : 'Add to comparison'}
-                        className={`transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${isSelected ? 'text-cyan-300' : 'text-slate-400 hover:text-cyan-300'}`}
+                        className={`transition-all duration-200 hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed ${isSelected ? 'text-emerald-400' : 'text-slate-400 hover:text-emerald-400'}`}
                     >
                         {isSelected ? <CheckCircleIcon /> : <PlusCircleIcon />}
                     </button>
@@ -213,20 +216,20 @@ const ResultItemCard: React.FC<{
             </div>
             
             <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-black/20 p-3 rounded-lg text-center">
+                <div className="bg-slate-900/60 p-3 rounded-lg text-center">
                     <div className="text-xs text-slate-400 mb-1">Eat Time</div>
                     <div className="font-bold text-lg text-white">{formatMinutes(item.eat_minutes)}</div>
                 </div>
-                <div className="bg-black/20 p-3 rounded-lg text-center">
+                <div className="bg-slate-900/60 p-3 rounded-lg text-center">
                     <div className="text-xs text-slate-400 mb-1">Burn Time</div>
-                    <div className="font-bold text-lg text-cyan-300">{formatMinutes(item.burn_minutes)}</div>
+                    <div className="font-bold text-lg text-emerald-400">{formatMinutes(item.burn_minutes)}</div>
                 </div>
             </div>
             
             {includeVisualHints && (
               <div className="mt-4">
-                  <div className="w-full bg-white/10 rounded-full h-2.5">
-                      <div className="bg-gradient-to-r from-cyan-400 to-pink-500 h-2.5 rounded-full" style={{ width: `${burnRatio}%` }}></div>
+                  <div className="w-full bg-slate-700 rounded-full h-2.5">
+                      <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2.5 rounded-full" style={{ width: `${burnRatio}%` }}></div>
                   </div>
                   <div className="text-xs text-slate-400 mt-1 flex justify-between">
                       <span>Eat</span>
@@ -236,7 +239,7 @@ const ResultItemCard: React.FC<{
             )}
             
             {item.shock_factor && (
-                 <div className="mt-4 pt-4 border-t border-white/10">
+                 <div className="mt-4 pt-4 border-t border-slate-700">
                     <p className="text-sm text-slate-300">
                         <span className="font-semibold text-amber-400">Shock Factor ({item.shock_factor.servings_multiplier}x):</span> {formatMinutes(item.shock_factor.burn_minutes)} burn time
                     </p>
@@ -283,7 +286,7 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
 
   return (
     <>
-    <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 max-h-[85vh] overflow-y-auto">
+    <div className="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/80 max-h-[85vh] overflow-y-auto">
       <div className="p-6">
         {computation.warnings && computation.warnings.length > 0 && (
           <div className="mb-6 bg-amber-500/10 border border-amber-500/30 text-amber-300 p-4 rounded-2xl">
@@ -308,7 +311,7 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
                     onClick={() => setIsModalOpen(true)}
                     aria-label="Share report"
                     title="Share report"
-                    className="flex items-center gap-2 px-4 py-2 text-sm rounded-xl font-medium transition-colors duration-200 border bg-white/5 border-white/10 hover:bg-white/20 text-slate-200"
+                    className="flex items-center gap-2 px-4 py-2 text-sm rounded-xl font-medium transition-colors duration-200 border bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200"
                 >
                     <ShareIcon className="w-4 h-4" />
                     <span>Share</span>
@@ -318,19 +321,19 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div className="bg-black/20 p-4 rounded-xl flex flex-col justify-center">
-                <div className="text-sm text-cyan-300">Total Calories</div>
+            <div className="bg-slate-900/60 p-4 rounded-xl flex flex-col justify-center transition-transform duration-200 hover:-translate-y-1">
+                <div className="text-sm text-emerald-300">Total Calories</div>
                 <div className="text-3xl font-bold text-white flex items-baseline justify-center gap-1">
                     {computation.totals.calories_kcal.toLocaleString()}
                 </div>
             </div>
-             <div className="bg-black/20 p-4 rounded-xl">
-                <div className="text-sm text-cyan-300">Total Burn Time</div>
+             <div className="bg-slate-900/60 p-4 rounded-xl transition-transform duration-200 hover:-translate-y-1">
+                <div className="text-sm text-emerald-300">Total Burn Time</div>
                 <div className="text-3xl font-bold text-white">{formatMinutes(computation.totals.burn_minutes)}</div>
                 <div className="text-xs text-slate-400 capitalize">{activityLabel}</div>
             </div>
-             <div className="bg-black/20 p-4 rounded-xl flex flex-col justify-center">
-                <div className="text-sm text-cyan-300">Annualized</div>
+             <div className="bg-slate-900/60 p-4 rounded-xl flex flex-col justify-center transition-transform duration-200 hover:-translate-y-1">
+                <div className="text-sm text-emerald-300">Annualized</div>
                 <div className="text-3xl font-bold text-white flex items-baseline justify-center gap-1">
                     ~{computation.totals.annualized.pounds_equiv.toFixed(1)}
                     <span className="text-base font-medium text-slate-400">lbs/yr</span>
@@ -365,14 +368,14 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
         </div>
 
         {shouldRenderEducationalSection && (
-          <div className="mt-8 pt-6 border-t border-white/10">
+          <div className="mt-8 pt-6 border-t border-slate-700">
             <div className="flex items-center gap-3 mb-4">
                 <LightbulbIcon className="w-6 h-6 text-amber-400" />
                 <h3 className="text-xl font-semibold text-white">Educational Insights</h3>
             </div>
             
             {hasEducationalSummary && (
-              <div className="mb-6 bg-black/20 p-4 rounded-2xl">
+              <div className="mb-6 bg-slate-900/60 p-4 rounded-2xl">
                 <h4 className="font-semibold text-slate-200 mb-2">Overall Takeaway</h4>
                 <p className="text-slate-300">{computation.report.education_summary}</p>
               </div>
@@ -381,7 +384,7 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
             {hasEducationalItems && (
                 <div className="space-y-4">
                 {educationalItems.map((item, index) => (
-                    <div key={index} className="bg-black/20 p-4 rounded-2xl">
+                    <div key={index} className="bg-slate-900/60 p-4 rounded-2xl">
                     <h4 className="font-semibold text-slate-200">{item.name}</h4>
                     <div className="mt-2 text-sm space-y-2 text-slate-300">
                         {item.education.satiety_flag && (
@@ -398,12 +401,12 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
           </div>
         )}
         
-        <div className="mt-8 pt-6 border-t border-white/10">
+        <div className="mt-8 pt-6 border-t border-slate-700">
             <div className="flex items-center gap-3 mb-4">
-                <DocumentTextIcon className="w-6 h-6 text-cyan-300" />
+                <DocumentTextIcon className="w-6 h-6 text-emerald-300" />
                 <h3 className="text-xl font-semibold text-white">Detailed Analysis</h3>
             </div>
-            <div className="bg-black/20 p-4 rounded-2xl">
+            <div className="bg-slate-900/60 p-4 rounded-2xl">
               <SimpleMarkdown content={computation.report.details_markdown} />
             </div>
         </div>

@@ -12,7 +12,7 @@ const Toggle: React.FC<{ checked: boolean; onChange: (checked: boolean) => void;
     <span className="text-slate-200">{label}</span>
     <div className="relative">
       <input type="checkbox" className="sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <div className={`block w-14 h-8 rounded-full transition-colors ${checked ? 'bg-gradient-to-r from-cyan-500 to-pink-500' : 'bg-white/10'}`}></div>
+      <div className={`block w-14 h-8 rounded-full transition-colors ${checked ? 'bg-gradient-to-r from-emerald-500 to-teal-600' : 'bg-slate-600'}`}></div>
       <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${checked ? 'translate-x-6' : ''}`}></div>
     </div>
   </label>
@@ -20,7 +20,7 @@ const Toggle: React.FC<{ checked: boolean; onChange: (checked: boolean) => void;
 
 const OptionsCard: React.FC<OptionsCardProps> = ({ options, onOptionChange }) => {
   return (
-    <div className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
+    <div className="bg-slate-800/40 backdrop-blur-xl p-6 rounded-2xl border border-slate-700/80">
       <h3 className="text-xl font-bold text-white mb-4">Analysis Options</h3>
       <div className="space-y-6">
         <div>
@@ -32,7 +32,7 @@ const OptionsCard: React.FC<OptionsCardProps> = ({ options, onOptionChange }) =>
           {options.include_shock_factor && (
             <div className="pl-2 mt-4">
               <label htmlFor="servings_multiplier" className="block text-sm font-medium text-slate-300 mb-2">
-                Servings Multiplier: <span className="font-bold text-cyan-300">{options.servings_multiplier}x</span>
+                Servings Multiplier: <span className="font-bold text-emerald-300">{options.servings_multiplier}x</span>
               </label>
               <input
                 type="range"
@@ -43,7 +43,7 @@ const OptionsCard: React.FC<OptionsCardProps> = ({ options, onOptionChange }) =>
                 step="1"
                 value={options.servings_multiplier}
                 onChange={(e) => onOptionChange('servings_multiplier', parseInt(e.target.value, 10))}
-                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-emerald-500"
               />
             </div>
           )}

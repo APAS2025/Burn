@@ -31,15 +31,15 @@ const ComparisonRow: React.FC<{
     let class2 = 'text-white';
 
     if (value1 < value2) {
-        class1 = lowerIsBetter ? 'text-green-400' : 'text-pink-400';
-        class2 = lowerIsBetter ? 'text-pink-400' : 'text-green-400';
+        class1 = lowerIsBetter ? 'text-emerald-400' : 'text-rose-400';
+        class2 = lowerIsBetter ? 'text-rose-400' : 'text-emerald-400';
     } else if (value2 < value1) {
-        class2 = lowerIsBetter ? 'text-green-400' : 'text-pink-400';
-        class1 = lowerIsBetter ? 'text-pink-400' : 'text-green-400';
+        class2 = lowerIsBetter ? 'text-emerald-400' : 'text-rose-400';
+        class1 = lowerIsBetter ? 'text-rose-400' : 'text-emerald-400';
     }
 
     return (
-        <div className="grid grid-cols-3 items-center text-center py-3 border-b border-white/10 last:border-b-0">
+        <div className="grid grid-cols-3 items-center text-center py-3 border-b border-slate-700 last:border-b-0">
             <div className={`font-semibold text-lg ${class1}`}>
                 {formatter(value1)} <span className="text-sm text-slate-400">{unit}</span>
             </div>
@@ -54,13 +54,13 @@ const ComparisonRow: React.FC<{
 
 const ComparisonView: React.FC<ComparisonViewProps> = ({ item1, item2, onClear, activityLabel }) => {
   return (
-    <div className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-cyan-400/30 mb-8">
+    <div className="bg-slate-800/40 backdrop-blur-xl p-6 rounded-2xl border border-emerald-500/30 mb-8">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <ScaleIcon className="w-6 h-6 text-cyan-300" />
+          <ScaleIcon className="w-6 h-6 text-emerald-300" />
           <h3 className="text-xl font-semibold text-white">Side-by-Side Comparison</h3>
         </div>
-        <button onClick={onClear} className="text-slate-400 hover:text-white transition-colors" aria-label="Clear comparison">
+        <button onClick={onClear} className="text-slate-400 hover:text-white transition-all transform hover:scale-110" aria-label="Clear comparison">
           <XIcon className="w-6 h-6" />
         </button>
       </div>
@@ -77,7 +77,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ item1, item2, onClear, 
         </div>
       </div>
 
-      <div className="mt-2 bg-black/20 rounded-xl">
+      <div className="mt-2 bg-slate-900/60 rounded-xl">
         <ComparisonRow 
             label="Calories" 
             value1={item1.calories_kcal} 

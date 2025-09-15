@@ -25,7 +25,7 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, activity, activitie
   };
   
   return (
-    <div className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
+    <div className="bg-slate-800/40 backdrop-blur-xl p-6 rounded-2xl border border-slate-700/80">
       <h3 className="text-xl font-bold text-white mb-4">Personalization</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -36,7 +36,7 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, activity, activitie
             name="weight_kg"
             value={user.weight_kg || ''}
             onChange={handleUserInputChange}
-            className="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-white placeholder-slate-400 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition"
+            className="w-full bg-slate-900/60 border border-slate-700 rounded-lg py-2 px-3 text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
             placeholder="Default: 75"
           />
         </div>
@@ -48,7 +48,7 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, activity, activitie
             name="height_cm"
             value={user.height_cm || ''}
             onChange={handleUserInputChange}
-            className="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-white placeholder-slate-400 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition"
+            className="w-full bg-slate-900/60 border border-slate-700 rounded-lg py-2 px-3 text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
             placeholder="e.g., 175"
           />
         </div>
@@ -60,7 +60,7 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, activity, activitie
             name="age"
             value={user.age || ''}
             onChange={handleUserInputChange}
-            className="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-white placeholder-slate-400 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition"
+            className="w-full bg-slate-900/60 border border-slate-700 rounded-lg py-2 px-3 text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
             placeholder="e.g., 30"
           />
         </div>
@@ -71,7 +71,7 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, activity, activitie
             name="sex"
             value={user.sex || ''}
             onChange={handleUserInputChange}
-            className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition appearance-none"
+            className="w-full bg-slate-900/60 border border-slate-700 rounded-lg py-2 px-3 text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition appearance-none"
           >
             <option value="">Prefer not to say</option>
             <option value="Male">Male</option>
@@ -86,7 +86,7 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, activity, activitie
             name="activity"
             value={activity}
             onChange={(e) => onActivityChange(e.target.value)}
-            className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-3 text-white focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition appearance-none"
+            className="w-full bg-slate-900/60 border border-slate-700 rounded-lg py-2 px-3 text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition appearance-none"
           >
             {activities.map(({ key, label }) => (
               <option key={key} value={key}>{label}</option>

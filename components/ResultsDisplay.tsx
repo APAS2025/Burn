@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Computation, ComputationItem } from '../types';
-import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon } from './Icons';
+import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, ShareIcon, FlameIcon, CutleryIcon, CameraIcon, PlusCircleIcon, CheckCircleIcon } from './Icons';
+import ComparisonView from './ComparisonView';
 
 // A simple markdown renderer component
 const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
@@ -9,7 +11,7 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
         .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mb-4 text-white">$1</h1>')
         .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-6 mb-3 text-white">$1</h2>')
         .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2 text-slate-200">$1</h3>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-cyan-400">$1</strong>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-cyan-300">$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/^- (.*$)/gim, '<li class="ml-6 list-disc">$1</li>')
         .replace(/\n/g, '<br />');
@@ -39,14 +41,13 @@ const ShareButton: React.FC<{ text: string; withLabel?: boolean }> = ({ text, wi
 
   const iconSize = withLabel ? 'w-4 h-4' : 'w-5 h-5';
   
-  // Using a config object makes state management cleaner and reduces repetition.
   const stateConfig = {
     idle: {
       label: 'Copy to clipboard',
       icon: <ClipboardIcon className={iconSize} />,
-      buttonText: 'Share',
+      buttonText: 'Copy Text',
       labelClasses: 'bg-white/5 border-white/10 hover:bg-white/20 text-slate-200',
-      iconClasses: 'text-slate-400 hover:text-cyan-400',
+      iconClasses: 'text-slate-400 hover:text-cyan-300',
     },
     copied: {
       label: 'Copied!',
@@ -70,7 +71,7 @@ const ShareButton: React.FC<{ text: string; withLabel?: boolean }> = ({ text, wi
         onClick={handleCopy}
         aria-label={stateConfig.label}
         title={stateConfig.label}
-        className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md font-medium transition-colors duration-200 border ${stateConfig.labelClasses}`}
+        className={`flex items-center justify-center w-full gap-2 px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 border ${stateConfig.labelClasses}`}
       >
         {stateConfig.icon}
         <span>{stateConfig.buttonText}</span>
@@ -90,44 +91,144 @@ const ShareButton: React.FC<{ text: string; withLabel?: boolean }> = ({ text, wi
   );
 };
 
-
 const formatMinutes = (minutes: number) => {
   if (minutes < 60) return `${Math.round(minutes)} min`;
   const hours = Math.floor(minutes / 60);
   const mins = Math.round(minutes % 60);
+  if (mins === 0) return `${hours}h`;
   return `${hours}h ${mins}m`;
 };
 
-const ResultItemCard: React.FC<{ item: ComputationItem, activityLabel: string, includeVisualHints: boolean }> = ({ item, activityLabel, includeVisualHints }) => {
+const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; }> = ({ computation, onClose }) => {
+    const { totals, items } = computation;
+    const eatTime = totals.eat_minutes;
+    const burnTime = totals.burn_minutes;
+    
+    const ratio = burnTime > 0 ? eatTime / burnTime : 0;
+    const eatBarWidth = Math.max(5, ratio * 100);
+
+    return (
+        <div 
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-[fadeIn_0.3s_ease-out]"
+            onClick={onClose}
+            aria-modal="true"
+            role="dialog"
+        >
+            <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+                <div className="aspect-[9/10] bg-slate-900 rounded-3xl border border-cyan-500/30 p-6 flex flex-col text-white shadow-2xl shadow-cyan-500/10" style={{ backgroundImage: 'radial-gradient(at 47% 33%, hsl(203.00, 39%, 20%) 0, transparent 59%), radial-gradient(at 82% 65%, hsl(287.00, 39%, 25%) 0, transparent 55%)' }}>
+                    <div className="text-center">
+                        <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-pink-400">Calorie Reality Check</h2>
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col justify-center items-center my-4">
+                         <div className="text-center">
+                            <div className="text-sm text-slate-400">Time to Eat</div>
+                            <div className="text-4xl font-bold flex items-center gap-2">
+                                <CutleryIcon className="w-6 h-6 text-slate-400" />
+                                {formatMinutes(eatTime)}
+                            </div>
+                        </div>
+                        <div className="text-6xl font-light text-slate-600 my-2">vs</div>
+                         <div className="text-center">
+                            <div className="text-sm text-cyan-300">Time to Burn</div>
+                            <div className="text-4xl font-bold text-cyan-300 flex items-center gap-2">
+                                <FlameIcon className="w-6 h-6" />
+                                {formatMinutes(burnTime)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2 mb-4">
+                        <div className="w-full bg-white/10 rounded-full h-3">
+                            <div className="bg-slate-500 h-3 rounded-full" style={{ width: `${eatBarWidth}%` }}></div>
+                        </div>
+                        <div className="w-full bg-white/10 rounded-full h-3">
+                            <div className="bg-gradient-to-r from-cyan-500 to-pink-500 h-3 rounded-full" style={{ width: '100%' }}></div>
+                        </div>
+                    </div>
+
+                    <div className="text-center text-lg font-bold">
+                        {totals.calories_kcal.toLocaleString()} <span className="text-base font-normal text-slate-400">Total Calories</span>
+                    </div>
+
+                    <div className="text-xs text-slate-500 text-center mt-2 border-t border-white/10 pt-3">
+                        {items.map(item => item.name).join(' • ')}
+                    </div>
+
+                    <div className="mt-auto text-center text-xs text-slate-600 font-semibold tracking-wider pt-2">
+                        EAT IN MINUTES, BURN IN HOURS
+                    </div>
+                </div>
+                <div className="mt-6 flex flex-col items-center gap-4">
+                    <div className="w-full max-w-xs grid grid-cols-1 gap-3">
+                       <ShareButton text={computation.totals.shareable_card_text} withLabel />
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-slate-400">
+                        <CameraIcon className="w-4 h-4" />
+                        <span>Tip: Take a screenshot to share!</span>
+                    </div>
+                </div>
+            </div>
+            <button 
+                onClick={onClose} 
+                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+                aria-label="Close modal"
+            >
+                <XIcon className="w-8 h-8" />
+            </button>
+        </div>
+    );
+};
+
+const ResultItemCard: React.FC<{ 
+    item: ComputationItem, 
+    activityLabel: string, 
+    includeVisualHints: boolean,
+    index: number,
+    isSelected: boolean,
+    isSelectionDisabled: boolean,
+    onSelect: (index: number) => void
+}> = ({ item, activityLabel, includeVisualHints, index, isSelected, isSelectionDisabled, onSelect }) => {
     const burnRatio = Math.max(0, (item.burn_minutes / (item.burn_minutes + item.eat_minutes)) * 100);
 
     return (
-        <div className="bg-slate-800/60 p-4 rounded-lg border border-white/10 backdrop-blur-sm">
+        <div className="bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10">
             <div className="flex justify-between items-start">
                 <div>
-                    <h4 className="font-bold text-white">{item.name}</h4>
-                    <p className="text-sm text-slate-400">{item.serving_label} - {item.calories_kcal} kcal</p>
+                    <h4 className="font-bold text-white text-lg">{item.name}</h4>
+                    <p className="text-sm text-slate-300">{item.serving_label} - {item.calories_kcal} kcal</p>
                 </div>
-                <ShareButton text={item.shareable_card_text} />
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => onSelect(index)}
+                        disabled={isSelectionDisabled}
+                        title={isSelected ? 'Remove from comparison' : 'Add to comparison'}
+                        aria-label={isSelected ? 'Remove from comparison' : 'Add to comparison'}
+                        className={`transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${isSelected ? 'text-cyan-300' : 'text-slate-400 hover:text-cyan-300'}`}
+                    >
+                        {isSelected ? <CheckCircleIcon /> : <PlusCircleIcon />}
+                    </button>
+                    <ShareButton text={item.shareable_card_text} />
+                </div>
             </div>
             
-            <div className="mt-4 space-y-2 text-sm">
-                <div className="flex justify-between">
-                    <span>Time to Eat:</span>
-                    <span className="font-semibold text-white">{formatMinutes(item.eat_minutes)}</span>
+            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                <div className="bg-black/20 p-3 rounded-lg text-center">
+                    <div className="text-xs text-slate-400 mb-1">Eat Time</div>
+                    <div className="font-bold text-lg text-white">{formatMinutes(item.eat_minutes)}</div>
                 </div>
-                <div className="flex justify-between">
-                    <span>Time to Burn ({activityLabel}):</span>
-                    <span className="font-semibold text-white">{formatMinutes(item.burn_minutes)}</span>
+                <div className="bg-black/20 p-3 rounded-lg text-center">
+                    <div className="text-xs text-slate-400 mb-1">Burn Time</div>
+                    <div className="font-bold text-lg text-cyan-300">{formatMinutes(item.burn_minutes)}</div>
                 </div>
             </div>
             
             {includeVisualHints && (
-              <div className="mt-3">
-                  <div className="w-full bg-slate-700 rounded-full h-2.5">
-                      <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2.5 rounded-full" style={{ width: `${burnRatio}%` }}></div>
+              <div className="mt-4">
+                  <div className="w-full bg-white/10 rounded-full h-2.5">
+                      <div className="bg-gradient-to-r from-cyan-400 to-pink-500 h-2.5 rounded-full" style={{ width: `${burnRatio}%` }}></div>
                   </div>
-                  <div className="text-xs text-slate-500 mt-1 flex justify-between">
+                  <div className="text-xs text-slate-400 mt-1 flex justify-between">
                       <span>Eat</span>
                       <span>Burn</span>
                   </div>
@@ -147,6 +248,8 @@ const ResultItemCard: React.FC<{ item: ComputationItem, activityLabel: string, i
 
 
 const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [comparisonSelection, setComparisonSelection] = useState<number[]>([]);
   const activityLabel = computation.meta.activity_profile.activity_key.split('_')[0];
   
   const educationalItems = computation.items.filter(item => item.education?.satiety_flag || item.education?.suggested_swap);
@@ -154,11 +257,36 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
   const hasEducationalItems = educationalItems.length > 0;
   const shouldRenderEducationalSection = computation.options.include_education && (hasEducationalSummary || hasEducationalItems);
   
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
+
+  const handleComparisonSelect = (selectedIndex: number) => {
+    setComparisonSelection(prev => {
+        if (prev.includes(selectedIndex)) {
+            return prev.filter(index => index !== selectedIndex);
+        }
+        if (prev.length < 2) {
+            return [...prev, selectedIndex];
+        }
+        return prev;
+    });
+  };
+
   return (
-    <div className="bg-slate-800/50 rounded-lg border border-white/10 backdrop-blur-sm max-h-[85vh] overflow-y-auto">
+    <>
+    <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 max-h-[85vh] overflow-y-auto">
       <div className="p-6">
         {computation.warnings && computation.warnings.length > 0 && (
-          <div className="mb-6 bg-amber-500/10 border border-amber-500/30 text-amber-300 p-4 rounded-lg">
+          <div className="mb-6 bg-amber-500/10 border border-amber-500/30 text-amber-300 p-4 rounded-2xl">
             <div className="flex items-start">
               <WarningIcon className="w-5 h-5 mr-3 mt-1 flex-shrink-0" />
               <div>
@@ -175,28 +303,35 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
 
         <div>
             <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white">{computation.report.title}</h2>
-                <ShareButton text={computation.totals.shareable_card_text} withLabel />
+                <h2 className="text-3xl font-bold text-white">{computation.report.title}</h2>
+                 <button
+                    onClick={() => setIsModalOpen(true)}
+                    aria-label="Share report"
+                    title="Share report"
+                    className="flex items-center gap-2 px-4 py-2 text-sm rounded-xl font-medium transition-colors duration-200 border bg-white/5 border-white/10 hover:bg-white/20 text-slate-200"
+                >
+                    <ShareIcon className="w-4 h-4" />
+                    <span>Share</span>
+                </button>
             </div>
-            <p className="text-slate-300 mt-1">{computation.report.summary}</p>
+            <p className="text-slate-300 mt-2">{computation.report.summary}</p>
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div className="bg-slate-900/50 p-3 rounded-lg flex flex-col justify-center">
-                <div className="text-sm text-cyan-400">Total Calories</div>
-                <div className="text-2xl font-bold text-white flex items-baseline justify-center gap-1">
+            <div className="bg-black/20 p-4 rounded-xl flex flex-col justify-center">
+                <div className="text-sm text-cyan-300">Total Calories</div>
+                <div className="text-3xl font-bold text-white flex items-baseline justify-center gap-1">
                     {computation.totals.calories_kcal.toLocaleString()}
-                    <span className="text-base font-medium text-slate-400">kcal</span>
                 </div>
             </div>
-             <div className="bg-slate-900/50 p-3 rounded-lg">
-                <div className="text-sm text-cyan-400">Total Burn Time</div>
-                <div className="text-2xl font-bold text-white">{formatMinutes(computation.totals.burn_minutes)}</div>
-                <div className="text-sm text-slate-500 capitalize">{activityLabel}</div>
+             <div className="bg-black/20 p-4 rounded-xl">
+                <div className="text-sm text-cyan-300">Total Burn Time</div>
+                <div className="text-3xl font-bold text-white">{formatMinutes(computation.totals.burn_minutes)}</div>
+                <div className="text-xs text-slate-400 capitalize">{activityLabel}</div>
             </div>
-             <div className="bg-slate-900/50 p-3 rounded-lg flex flex-col justify-center">
-                <div className="text-sm text-cyan-400">Annualized</div>
-                <div className="text-2xl font-bold text-white flex items-baseline justify-center gap-1">
+             <div className="bg-black/20 p-4 rounded-xl flex flex-col justify-center">
+                <div className="text-sm text-cyan-300">Annualized</div>
+                <div className="text-3xl font-bold text-white flex items-baseline justify-center gap-1">
                     ~{computation.totals.annualized.pounds_equiv.toFixed(1)}
                     <span className="text-base font-medium text-slate-400">lbs/yr</span>
                 </div>
@@ -204,14 +339,26 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
         </div>
 
         <div className="mt-8">
-            <h3 className="text-lg font-semibold text-white mb-4">Per-Food Breakdown</h3>
+            {comparisonSelection.length === 2 && (
+                <ComparisonView 
+                    item1={computation.items[comparisonSelection[0]]}
+                    item2={computation.items[comparisonSelection[1]]}
+                    onClear={() => setComparisonSelection([])}
+                    activityLabel={activityLabel}
+                />
+            )}
+            <h3 className="text-xl font-semibold text-white mb-4">Per-Food Breakdown</h3>
             <div className="space-y-4">
                 {computation.items.map((item, index) => (
                     <ResultItemCard 
                         key={index} 
+                        index={index}
                         item={item} 
                         activityLabel={activityLabel}
                         includeVisualHints={computation.options.include_visual_hints}
+                        isSelected={comparisonSelection.includes(index)}
+                        onSelect={handleComparisonSelect}
+                        isSelectionDisabled={comparisonSelection.length >= 2 && !comparisonSelection.includes(index)}
                     />
                 ))}
             </div>
@@ -221,11 +368,11 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
           <div className="mt-8 pt-6 border-t border-white/10">
             <div className="flex items-center gap-3 mb-4">
                 <LightbulbIcon className="w-6 h-6 text-amber-400" />
-                <h3 className="text-lg font-semibold text-white">Educational Insights</h3>
+                <h3 className="text-xl font-semibold text-white">Educational Insights</h3>
             </div>
             
             {hasEducationalSummary && (
-              <div className="mb-6 bg-slate-900/50 p-4 rounded-lg">
+              <div className="mb-6 bg-black/20 p-4 rounded-2xl">
                 <h4 className="font-semibold text-slate-200 mb-2">Overall Takeaway</h4>
                 <p className="text-slate-300">{computation.report.education_summary}</p>
               </div>
@@ -234,7 +381,7 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
             {hasEducationalItems && (
                 <div className="space-y-4">
                 {educationalItems.map((item, index) => (
-                    <div key={index} className="bg-slate-900/50 p-4 rounded-lg">
+                    <div key={index} className="bg-black/20 p-4 rounded-2xl">
                     <h4 className="font-semibold text-slate-200">{item.name}</h4>
                     <div className="mt-2 text-sm space-y-2 text-slate-300">
                         {item.education.satiety_flag && (
@@ -253,16 +400,18 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
         
         <div className="mt-8 pt-6 border-t border-white/10">
             <div className="flex items-center gap-3 mb-4">
-                <DocumentTextIcon className="w-6 h-6 text-cyan-400" />
-                <h3 className="text-lg font-semibold text-white">Detailed Analysis</h3>
+                <DocumentTextIcon className="w-6 h-6 text-cyan-300" />
+                <h3 className="text-xl font-semibold text-white">Detailed Analysis</h3>
             </div>
-            <div className="bg-slate-900/50 p-4 rounded-lg">
+            <div className="bg-black/20 p-4 rounded-2xl">
               <SimpleMarkdown content={computation.report.details_markdown} />
             </div>
         </div>
 
       </div>
     </div>
+    {isModalOpen && <ShareCardModal computation={computation} onClose={() => setIsModalOpen(false)} />}
+    </>
   );
 };
 

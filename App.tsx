@@ -67,13 +67,13 @@ const App: React.FC = () => {
   }, [scenario]);
 
   return (
-    <div className="min-h-screen bg-slate-900 font-sans text-gray-200">
+    <div className="min-h-screen font-sans">
       <main className="container mx-auto px-4 py-8 md:py-12">
-        <header className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-pink-400 to-indigo-400">
             Eat in Minutes, Burn in Hours
           </h1>
-          <p className="mt-2 text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-slate-300 max-w-2xl mx-auto">
             Visualize the real cost of calories. See how a few minutes of eating translate into hours of exercise.
           </p>
         </header>
@@ -88,7 +88,7 @@ const App: React.FC = () => {
             />
             <button
               onClick={addFood}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors duration-200 text-cyan-400 font-semibold"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors duration-200 text-cyan-300 font-semibold"
             >
               <PlusIcon />
               Add Food Item
@@ -107,11 +107,11 @@ const App: React.FC = () => {
              <button
               onClick={handleCalculate}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-lg rounded-lg shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 transition-transform duration-200"
+              className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-gradient-to-r from-cyan-400 to-pink-500 text-white font-bold text-lg rounded-2xl shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 transition-all duration-300"
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -129,23 +129,26 @@ const App: React.FC = () => {
           {/* Output Column */}
           <div className="relative">
             <div className="sticky top-8">
-              {error && <div className="bg-red-500/20 border border-red-500 text-red-300 p-4 rounded-lg mb-4">{error}</div>}
+              {error && <div className="bg-red-500/20 border border-red-500 text-red-300 p-4 rounded-2xl mb-4 animate-pulse">{error}</div>}
               {isLoading ? (
-                 <div className="w-full h-96 bg-slate-800/50 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm border border-white/10">
-                   <svg className="animate-spin h-10 w-10 text-cyan-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                 <div className="w-full h-96 bg-white/5 backdrop-blur-xl rounded-3xl flex flex-col items-center justify-center border border-white/10">
+                   <svg className="animate-spin h-12 w-12 text-cyan-300 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <h3 className="text-xl font-semibold text-white">Crunching the numbers...</h3>
-                  <p className="text-slate-400">This can take a moment.</p>
+                  <h3 className="text-2xl font-bold text-white">Crunching the numbers...</h3>
+                  <p className="text-slate-300">This can take a moment.</p>
                  </div>
               ) : computation ? (
                 <ResultsDisplay computation={computation} />
               ) : (
-                <div className="w-full h-96 bg-slate-800/50 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm border border-white/10 p-8 text-center">
-                  <SparklesIcon className="w-12 h-12 text-cyan-400 mb-4" />
-                  <h3 className="text-xl font-semibold text-white">Your Calorie Reality Check Awaits</h3>
-                  <p className="text-slate-400 mt-2">Fill in your food items, personalize the settings, and hit the calculate button to see your results here.</p>
+                <div className="w-full min-h-[500px] h-full bg-white/5 backdrop-blur-xl rounded-3xl flex flex-col items-center justify-center border border-white/10 p-8 text-center">
+                  <div className="relative mb-6">
+                    <div className="absolute -inset-2 bg-gradient-to-r from-cyan-400 to-pink-500 rounded-full blur-xl opacity-30"></div>
+                    <SparklesIcon className="relative w-16 h-16 text-cyan-300" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">Your Calorie Reality Check Awaits</h3>
+                  <p className="text-slate-300 mt-2 max-w-sm">Fill in your food items, personalize the settings, and hit the calculate button to see your results here.</p>
                 </div>
               )}
             </div>

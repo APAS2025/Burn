@@ -55,3 +55,49 @@ export const XIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" 
         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>
 );
+
+export const ShareIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.195.025.39.05.588.08a2.25 2.25 0 012.158 2.158 2.25 2.25 0 01-2.158 2.158c-.198.03-.393.055-.588.08M15.828 17.186a2.25 2.25 0 10-2.25-2.25 2.25 2.25 0 002.25 2.25z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+    </svg>
+);
+
+export const FlameIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.362-3.797z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75A4.5 4.5 0 0016.5 14.25a4.5 4.5 0 00-4.5-4.5A4.5 4.5 0 007.5 14.25a4.5 4.5 0 004.5 4.5z" />
+    </svg>
+);
+
+export const CutleryIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12.75 21V3.75m0 0L15 6.5m-2.25-2.75L9.75 6.5" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-1.5m0-15V3.75m0 0l2.25 2.75m-2.25-2.75L9.75 6.5" />
+    </svg>
+);
+
+export const CameraIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.776 48.776 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+    </svg>
+);
+
+export const PlusCircleIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+  
+export const CheckCircleIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+
+export const ScaleIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.036.243c-2.132 0-4.14-.35-5.964-.957a5.983 5.983 0 01-1.445-5.957L13.5 4.97m-3.75 0c-.987.13-1.98.283-2.96.453m-2.96-.453l-2.62 10.726c-.122.499.106 1.028.589 1.202a5.989 5.989 0 002.036.243c2.132 0 4.14-.35 5.964-.957a5.983 5.983 0 001.445-5.957L8.25 4.97M12 4.5v.008" />
+    </svg>
+);

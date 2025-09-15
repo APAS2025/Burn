@@ -23,29 +23,36 @@ const OptionsCard: React.FC<OptionsCardProps> = ({ options, onOptionChange }) =>
     <div className="bg-slate-800/50 p-6 rounded-lg border border-white/10">
       <h3 className="text-lg font-semibold text-white mb-4">Analysis Options</h3>
       <div className="space-y-4">
+        <div>
+          <Toggle
+            label="Include Shock Factor"
+            checked={options.include_shock_factor}
+            onChange={(value) => onOptionChange('include_shock_factor', value)}
+          />
+          {options.include_shock_factor && (
+            <div className="pl-4 mt-3">
+              <label htmlFor="servings_multiplier" className="block text-sm font-medium text-slate-400 mb-1">
+                Servings Multiplier: <span className="font-bold text-cyan-400">{options.servings_multiplier}x</span>
+              </label>
+              <input
+                type="range"
+                id="servings_multiplier"
+                name="servings_multiplier"
+                min="1"
+                max="5"
+                step="1"
+                value={options.servings_multiplier}
+                onChange={(e) => onOptionChange('servings_multiplier', parseInt(e.target.value, 10))}
+                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+              />
+            </div>
+          )}
+        </div>
         <Toggle
-          label="Include Shock Factor"
-          checked={options.include_shock_factor}
-          onChange={(value) => onOptionChange('include_shock_factor', value)}
+          label="Include Educational Insights"
+          checked={options.include_education}
+          onChange={(value) => onOptionChange('include_education', value)}
         />
-        {options.include_shock_factor && (
-          <div className="pl-4">
-            <label htmlFor="servings_multiplier" className="block text-sm font-medium text-slate-400 mb-1">
-              Servings Multiplier: <span className="font-bold text-cyan-400">{options.servings_multiplier}x</span>
-            </label>
-            <input
-              type="range"
-              id="servings_multiplier"
-              name="servings_multiplier"
-              min="1"
-              max="5"
-              step="1"
-              value={options.servings_multiplier}
-              onChange={(e) => onOptionChange('servings_multiplier', parseInt(e.target.value, 10))}
-              className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-            />
-          </div>
-        )}
       </div>
     </div>
   );

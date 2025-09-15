@@ -1,8 +1,7 @@
 
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Computation, ComputationItem } from '../types';
-import { ClipboardIcon, CheckIcon, WarningIcon } from './Icons';
+import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon } from './Icons';
 
 // A simple markdown renderer component
 const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
@@ -20,17 +19,62 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
 };
 
 const ShareButton: React.FC<{ text: string }> = ({ text }) => {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = () => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
+
+  // Reset the copy state after a delay, and clean up the timer
+  useEffect(() => {
+    if (copyState === 'idle') return;
+
+    const timerId = setTimeout(() => setCopyState('idle'), 2000);
+    return () => clearTimeout(timerId);
+  }, [copyState]);
+
+
+  const handleCopy = async () => {
+    // Prevent re-clicking during the feedback state
+    if (copyState !== 'idle') return;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyState('copied');
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      setCopyState('error');
+    }
+  };
+  
+  const getIcon = () => {
+    switch (copyState) {
+      case 'copied':
+        return <CheckIcon className="text-green-400" />;
+      case 'error':
+        return <XIcon className="text-red-400" />;
+      default:
+        return <ClipboardIcon />;
+    }
   };
 
+  const getLabel = () => {
+    switch (copyState) {
+      case 'copied':
+        return 'Copied!';
+      case 'error':
+        return 'Failed to copy';
+      default:
+        return 'Copy to clipboard';
+    }
+  };
+
+  const label = getLabel();
+
   return (
-    <button onClick={handleCopy} className="text-slate-400 hover:text-cyan-400 transition-colors duration-200">
-      {copied ? <CheckIcon className="text-green-400" /> : <ClipboardIcon />}
+    <button
+      onClick={handleCopy}
+      aria-label={label}
+      title={label}
+      className="text-slate-400 hover:text-cyan-400 transition-colors duration-200"
+    >
+      {getIcon()}
     </button>
   );
 };
@@ -93,6 +137,11 @@ const ResultItemCard: React.FC<{ item: ComputationItem, activityLabel: string, i
 const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation }) => {
   const activityLabel = computation.meta.activity_profile.activity_key.split('_')[0];
   
+  const educationalItems = computation.items.filter(item => item.education?.satiety_flag || item.education?.suggested_swap);
+  const hasEducationalSummary = !!computation.report.education_summary;
+  const hasEducationalItems = educationalItems.length > 0;
+  const shouldRenderEducationalSection = computation.options.include_education && (hasEducationalSummary || hasEducationalItems);
+  
   return (
     <div className="bg-slate-800/50 rounded-lg border border-white/10 backdrop-blur-sm max-h-[85vh] overflow-y-auto">
       <div className="p-6">
@@ -121,20 +170,24 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div className="bg-slate-900/50 p-3 rounded-lg">
+            <div className="bg-slate-900/50 p-3 rounded-lg flex flex-col justify-center">
                 <div className="text-sm text-cyan-400">Total Calories</div>
-                <div className="text-2xl font-bold text-white">{computation.totals.calories_kcal.toLocaleString()}</div>
-                <div className="text-sm text-slate-500">kcal</div>
+                <div className="text-2xl font-bold text-white flex items-baseline justify-center gap-1">
+                    {computation.totals.calories_kcal.toLocaleString()}
+                    <span className="text-base font-medium text-slate-400">kcal</span>
+                </div>
             </div>
              <div className="bg-slate-900/50 p-3 rounded-lg">
                 <div className="text-sm text-cyan-400">Total Burn Time</div>
                 <div className="text-2xl font-bold text-white">{formatMinutes(computation.totals.burn_minutes)}</div>
-                <div className="text-sm text-slate-500">{activityLabel}</div>
+                <div className="text-sm text-slate-500 capitalize">{activityLabel}</div>
             </div>
-             <div className="bg-slate-900/50 p-3 rounded-lg">
+             <div className="bg-slate-900/50 p-3 rounded-lg flex flex-col justify-center">
                 <div className="text-sm text-cyan-400">Annualized</div>
-                <div className="text-2xl font-bold text-white">~{computation.totals.annualized.pounds_equiv.toFixed(1)} lbs</div>
-                <div className="text-sm text-slate-500">per year</div>
+                <div className="text-2xl font-bold text-white flex items-baseline justify-center gap-1">
+                    ~{computation.totals.annualized.pounds_equiv.toFixed(1)}
+                    <span className="text-base font-medium text-slate-400">lbs/yr</span>
+                </div>
             </div>
         </div>
 
@@ -151,9 +204,49 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
                 ))}
             </div>
         </div>
+
+        {shouldRenderEducationalSection && (
+          <div className="mt-8 pt-6 border-t border-white/10">
+            <div className="flex items-center gap-3 mb-4">
+                <LightbulbIcon className="w-6 h-6 text-amber-400" />
+                <h3 className="text-lg font-semibold text-white">Educational Insights</h3>
+            </div>
+            
+            {hasEducationalSummary && (
+              <div className="mb-6 bg-slate-900/50 p-4 rounded-lg">
+                <h4 className="font-semibold text-slate-200 mb-2">Overall Takeaway</h4>
+                <p className="text-slate-300">{computation.report.education_summary}</p>
+              </div>
+            )}
+
+            {hasEducationalItems && (
+                <div className="space-y-4">
+                {educationalItems.map((item, index) => (
+                    <div key={index} className="bg-slate-900/50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-slate-200">{item.name}</h4>
+                    <div className="mt-2 text-sm space-y-2 text-slate-300">
+                        {item.education.satiety_flag && (
+                            <p><span className="font-semibold text-slate-400 mr-2">Satiety:</span> {item.education.satiety_flag}</p>
+                        )}
+                        {item.education.suggested_swap && (
+                            <p><span className="font-semibold text-slate-400 mr-2">Healthier Swap:</span> {item.education.suggested_swap}</p>
+                        )}
+                    </div>
+                    </div>
+                ))}
+                </div>
+            )}
+          </div>
+        )}
         
         <div className="mt-8 pt-6 border-t border-white/10">
-            <SimpleMarkdown content={computation.report.details_markdown} />
+            <div className="flex items-center gap-3 mb-4">
+                <DocumentTextIcon className="w-6 h-6 text-cyan-400" />
+                <h3 className="text-lg font-semibold text-white">Detailed Analysis</h3>
+            </div>
+            <div className="bg-slate-900/50 p-4 rounded-lg">
+              <SimpleMarkdown content={computation.report.details_markdown} />
+            </div>
         </div>
 
       </div>
@@ -162,3 +255,4 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
 };
 
 export default ResultsDisplay;
+    

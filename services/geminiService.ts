@@ -102,6 +102,7 @@ const computationSchema = {
         title: { type: Type.STRING },
         summary: { type: Type.STRING },
         details_markdown: { type: Type.STRING },
+        education_summary: { type: Type.STRING, nullable: true },
       },
     },
     options: {
@@ -134,6 +135,7 @@ export async function getCalorieAnalysis(scenario: Scenario): Promise<Computatio
 - If weight is missing, use default 75 kg. If activity is missing, use 'walking_3_mph'.
 - Calculate steps: if speed_mph is available, \`miles = burn_minutes * speed_mph / 60\`, then \`steps = miles * steps_per_mile\`. Otherwise, use the fallback: \`100 kcal ≈ 2000 steps\`.
 - Populate all fields in the provided JSON schema, including shock factors, annualized impact, educational content, and a detailed markdown report.
+- If the 'include_education' option is true, also generate an 'education_summary' in the 'report' object. This should be a short, encouraging paragraph summarizing the key educational takeaways from the food items.
 - Crucially, you must also return the original \`options\` object from the input \`Scenario\` within the \`Computation\` object.
 - Return a strictly valid JSON \`Computation\` result and a human-readable report.
 - Never hallucinate facts; when data is missing, apply the provided defaults.

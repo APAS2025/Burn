@@ -89,6 +89,7 @@ export interface ComputationReport {
   title: string;
   summary: string;
   details_markdown: string;
+  education_summary?: string;
 }
 
 export interface ActivityProfile {

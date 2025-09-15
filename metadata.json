@@ -1,5 +1,7 @@
 {
   "name": "Eat in Minutes, Burn in Hours",
   "description": "A web application that makes the calorie imbalance visceral by comparing minutes to eat vs. minutes/hours to burn across common foods, with optional personalization and 'shock factor' analysis.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "camera"
+  ]
 }

@@ -1,7 +1,7 @@
 
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Scenario, Computation } from '../types';
+import { Scenario, Computation, FoodItem } from '../types';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
@@ -161,5 +161,75 @@ export async function getCalorieAnalysis(scenario: Scenario): Promise<Computatio
   } catch (error) {
     console.error("Gemini API call failed:", error);
     throw new Error("Failed to get analysis from Gemini API.");
+  }
+}
+
+const foodItemsSchema = {
+  type: Type.ARRAY,
+  items: {
+    type: Type.OBJECT,
+    properties: {
+      name: { 
+        type: Type.STRING,
+        description: "The identified name of the food item."
+      },
+      serving_label: {
+        type: Type.STRING,
+        description: "A reasonable serving label for this item, e.g., '1 cup', '1 medium apple'."
+      },
+      calories_kcal: {
+        type: Type.NUMBER,
+        description: "The estimated number of calories in kcal for the serving."
+      },
+      eat_minutes: {
+        type: Type.NUMBER,
+        description: "A reasonable estimate of the number of minutes it would take to eat this item."
+      }
+    },
+    required: ["name", "serving_label", "calories_kcal", "eat_minutes"]
+  }
+};
+
+export async function getFoodAnalysisFromImage(base64Image: string, defaultEatMinutes: number): Promise<FoodItem[]> {
+  const model = 'gemini-2.5-flash';
+  
+  const systemInstruction = `You are a food identification and calorie estimation expert.
+- Analyze the user-provided image of food.
+- Identify all distinct food items visible.
+- For each item, provide a reasonable estimate for its name, serving size, calorie count (in kcal), and the time it would take to eat it in minutes.
+- If multiple items are present, return an array of objects.
+- If no food is identifiable, return an empty array.
+- Your response MUST be a JSON array of food items matching the provided schema. Do not return any other text or formatting.
+- If you are unsure about an item, make a best-guess estimate.
+- Use the defaultEatMinutes value for eat_minutes if you cannot determine a more accurate time.`;
+
+  const imagePart = {
+    inlineData: {
+      mimeType: 'image/jpeg',
+      data: base64Image,
+    },
+  };
+
+  const textPart = {
+    text: `Identify the food in this image. Use a default eating time of ${defaultEatMinutes} minutes if a more specific one isn't obvious.`
+  };
+
+  try {
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: { parts: [imagePart, textPart] },
+      config: {
+        systemInstruction,
+        responseMimeType: 'application/json',
+        responseSchema: foodItemsSchema
+      }
+    });
+
+    const jsonText = response.text.trim();
+    const result = JSON.parse(jsonText);
+    return result as FoodItem[];
+  } catch (error) {
+    console.error("Gemini image analysis failed:", error);
+    throw new Error("Failed to analyze food from image.");
   }
 }

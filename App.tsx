@@ -8,7 +8,8 @@ import UserInputCard from './components/UserInputCard';
 import OptionsCard from './components/OptionsCard';
 import ResultsDisplay from './components/ResultsDisplay';
 import FoodDatabaseModal from './components/FoodDatabaseModal';
-import { PlusIcon, SparklesIcon, DatabaseIcon } from './components/Icons';
+import CameraAnalysisModal from './components/CameraAnalysisModal';
+import { PlusIcon, SparklesIcon, DatabaseIcon, CameraIcon } from './components/Icons';
 import LoadingAnalysis from './components/LoadingAnalysis';
 import ThemeToggle from './components/ThemeToggle';
 
@@ -18,6 +19,7 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isDbModalOpen, setIsDbModalOpen] = useState<boolean>(false);
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState<boolean>(false);
 
   const updateFood = (index: number, updatedFood: FoodItem) => {
     const newFoods = [...scenario.foods];
@@ -37,6 +39,10 @@ const App: React.FC = () => {
   
   const addFoodFromDatabase = (food: FoodItem) => {
     setScenario({ ...scenario, foods: [...scenario.foods, food] });
+  };
+
+  const addFoodsFromAnalysis = (newFoods: FoodItem[]) => {
+    setScenario(prev => ({ ...prev, foods: [...prev.foods, ...newFoods] }));
   };
 
   const removeFood = (index: number) => {
@@ -97,20 +103,27 @@ const App: React.FC = () => {
               onUpdateFood={updateFood}
               onRemoveFood={removeFood}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button
                 onClick={addFood}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-800/40 border border-slate-700/80 rounded-2xl hover:bg-slate-700/50 transition-all duration-300 text-emerald-400 font-semibold transform hover:scale-[1.02]"
               >
                 <PlusIcon />
-                Add Manually
+                Manual
               </button>
               <button
                 onClick={() => setIsDbModalOpen(true)}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-800/40 border border-slate-700/80 rounded-2xl hover:bg-slate-700/50 transition-all duration-300 text-emerald-400 font-semibold transform hover:scale-[1.02]"
               >
                 <DatabaseIcon />
-                Add from Database
+                Database
+              </button>
+              <button
+                onClick={() => setIsCameraModalOpen(true)}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-800/40 border border-slate-700/80 rounded-2xl hover:bg-slate-700/50 transition-all duration-300 text-sky-400 font-semibold transform hover:scale-[1.02]"
+              >
+                <CameraIcon />
+                With AI
               </button>
             </div>
             <UserInputCard
@@ -173,6 +186,14 @@ const App: React.FC = () => {
           isOpen={isDbModalOpen}
           onClose={() => setIsDbModalOpen(false)}
           onAddFood={addFoodFromDatabase}
+        />
+      )}
+      {isCameraModalOpen && (
+        <CameraAnalysisModal
+          isOpen={isCameraModalOpen}
+          onClose={() => setIsCameraModalOpen(false)}
+          onAddFoods={addFoodsFromAnalysis}
+          defaultEatMinutes={scenario.preferences.default_eat_minutes}
         />
       )}
     </div>

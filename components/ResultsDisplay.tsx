@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Computation, ComputationItem } from '../types';
 import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon } from './Icons';
@@ -18,22 +17,17 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
     return <div className="prose prose-invert text-slate-300" dangerouslySetInnerHTML={{ __html: formattedContent }} />;
 };
 
-const ShareButton: React.FC<{ text: string }> = ({ text }) => {
+const ShareButton: React.FC<{ text: string; withLabel?: boolean }> = ({ text, withLabel = false }) => {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
 
-  // Reset the copy state after a delay, and clean up the timer
   useEffect(() => {
     if (copyState === 'idle') return;
-
-    const timerId = setTimeout(() => setCopyState('idle'), 2000);
-    return () => clearTimeout(timerId);
+    const timer = setTimeout(() => setCopyState('idle'), 2000);
+    return () => clearTimeout(timer);
   }, [copyState]);
 
-
   const handleCopy = async () => {
-    // Prevent re-clicking during the feedback state
     if (copyState !== 'idle') return;
-
     try {
       await navigator.clipboard.writeText(text);
       setCopyState('copied');
@@ -42,42 +36,60 @@ const ShareButton: React.FC<{ text: string }> = ({ text }) => {
       setCopyState('error');
     }
   };
+
+  const iconSize = withLabel ? 'w-4 h-4' : 'w-5 h-5';
   
-  const getIcon = () => {
-    switch (copyState) {
-      case 'copied':
-        return <CheckIcon className="text-green-400" />;
-      case 'error':
-        return <XIcon className="text-red-400" />;
-      default:
-        return <ClipboardIcon />;
-    }
-  };
-
-  const getLabel = () => {
-    switch (copyState) {
-      case 'copied':
-        return 'Copied!';
-      case 'error':
-        return 'Failed to copy';
-      default:
-        return 'Copy to clipboard';
-    }
-  };
-
-  const label = getLabel();
-
+  // Using a config object makes state management cleaner and reduces repetition.
+  const stateConfig = {
+    idle: {
+      label: 'Copy to clipboard',
+      icon: <ClipboardIcon className={iconSize} />,
+      buttonText: 'Share',
+      labelClasses: 'bg-white/5 border-white/10 hover:bg-white/20 text-slate-200',
+      iconClasses: 'text-slate-400 hover:text-cyan-400',
+    },
+    copied: {
+      label: 'Copied!',
+      icon: <CheckIcon className={iconSize} />,
+      buttonText: 'Copied!',
+      labelClasses: 'bg-green-500/20 text-green-400 border-transparent',
+      iconClasses: 'text-green-400',
+    },
+    error: {
+      label: 'Failed to copy',
+      icon: <XIcon className={iconSize} />,
+      buttonText: 'Error',
+      labelClasses: 'bg-red-500/20 text-red-400 border-transparent',
+      iconClasses: 'text-red-400',
+    },
+  }[copyState];
+  
+  if (withLabel) {
+    return (
+      <button
+        onClick={handleCopy}
+        aria-label={stateConfig.label}
+        title={stateConfig.label}
+        className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md font-medium transition-colors duration-200 border ${stateConfig.labelClasses}`}
+      >
+        {stateConfig.icon}
+        <span>{stateConfig.buttonText}</span>
+      </button>
+    );
+  }
+  
   return (
     <button
       onClick={handleCopy}
-      aria-label={label}
-      title={label}
-      className="text-slate-400 hover:text-cyan-400 transition-colors duration-200"
+      aria-label={stateConfig.label}
+      title={stateConfig.label}
+      className={`transition-colors duration-200 ${stateConfig.iconClasses}`}
     >
-      {getIcon()}
+      {stateConfig.icon}
     </button>
   );
 };
+
 
 const formatMinutes = (minutes: number) => {
   if (minutes < 60) return `${Math.round(minutes)} min`;
@@ -162,9 +174,9 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
         )}
 
         <div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white">{computation.report.title}</h2>
-                <ShareButton text={computation.totals.shareable_card_text} />
+                <ShareButton text={computation.totals.shareable_card_text} withLabel />
             </div>
             <p className="text-slate-300 mt-1">{computation.report.summary}</p>
         </div>
@@ -255,4 +267,3 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
 };
 
 export default ResultsDisplay;
-    

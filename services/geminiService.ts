@@ -3,7 +3,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Scenario, Computation } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+let ai: GoogleGenAI | null = null;
+
+const apiKey = process.env.API_KEY;
+
+export function isGeminiConfigured() {
+  return apiKey && apiKey.length > 0;
+}
+
+if (isGeminiConfigured()) {
+  ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+}
 
 const computationSchema = {
   type: Type.OBJECT,
@@ -126,6 +136,10 @@ const computationSchema = {
 
 
 export async function getCalorieAnalysis(scenario: Scenario): Promise<Computation> {
+  if (!ai) {
+    throw new Error("Gemini AI is not initialized. Please check your API key.");
+  }
+
   const model = 'gemini-2.5-flash';
   
   const systemInstruction = `You are an app back-end for the “Eat in Minutes, Burn in Hours” experience.

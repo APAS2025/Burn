@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { Scenario, FoodItem, Computation } from './types';
 import { DEFAULT_SCENARIO, ACTIVITY_LIBRARY } from './constants';
-import { getCalorieAnalysis } from './services/geminiService';
+import { getCalorieAnalysis, isGeminiConfigured } from './services/geminiService';
 import FoodInputList from './components/FoodInputList';
 import UserInputCard from './components/UserInputCard';
 import OptionsCard from './components/OptionsCard';
@@ -12,7 +12,28 @@ import { PlusIcon, SparklesIcon, DatabaseIcon } from './components/Icons';
 import LoadingAnalysis from './components/LoadingAnalysis';
 import ThemeToggle from './components/ThemeToggle';
 
+const ApiKeyErrorDisplay: React.FC = () => (
+  <div className="min-h-screen font-sans flex items-center justify-center">
+    <main className="container mx-auto px-4 py-8 md:py-12">
+      <div className="bg-red-800/20 border border-red-600/50 text-red-200 p-8 rounded-2xl max-w-2xl mx-auto text-center">
+        <h1 className="text-3xl font-bold mb-4">Configuration Error</h1>
+        <p className="text-lg mb-2">The application is not configured correctly.</p>
+        <p className="text-md text-red-300">
+          The <strong>GEMINI_API_KEY</strong> is missing. Please add it to your environment variables to continue.
+        </p>
+        <p className="text-sm mt-6 text-red-400/80">
+          This app will not function until the API key is provided.
+        </p>
+      </div>
+    </main>
+  </div>
+);
+
 const App: React.FC = () => {
+  if (!isGeminiConfigured()) {
+    return <ApiKeyErrorDisplay />;
+  }
+
   const [scenario, setScenario] = useState<Scenario>(DEFAULT_SCENARIO);
   const [computation, setComputation] = useState<Computation | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);

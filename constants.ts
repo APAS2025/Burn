@@ -1,6 +1,4 @@
 
-
-
 import { Scenario, ActivityLibrary, FoodItem, AchievementKey } from './types';
 
 export const ACTIVITY_LIBRARY: ActivityLibrary = {
@@ -47,24 +45,6 @@ export const getDefaultScenario = (): Scenario => ({
       eat_minutes: 2,
       servings: 1,
       base_calories_kcal: 200,
-      base_eat_minutes: 2,
-    },
-    {
-      name: "Potato chips",
-      serving_label: "1 serving (28g)",
-      calories_kcal: 160,
-      eat_minutes: 3,
-      servings: 1,
-      base_calories_kcal: 160,
-      base_eat_minutes: 3,
-    },
-    {
-      name: "Soda",
-      serving_label: "12 oz can",
-      calories_kcal: 150,
-      eat_minutes: 2,
-      servings: 1,
-      base_calories_kcal: 150,
       base_eat_minutes: 2,
     }
   ]

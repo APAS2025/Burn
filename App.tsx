@@ -1,3 +1,5 @@
+
+
 // FIX: Import `useMemo` from React to resolve 'Cannot find name' error.
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Scenario, FoodItem, Computation, CustomActivity, GamificationProfile, ChallengeMode } from './types';
@@ -20,6 +22,7 @@ import ChallengeBanner from './components/ChallengeBanner';
 import RewardsModal from './components/RewardsModal';
 import * as storageService from './services/storageService';
 
+const MAX_FOOD_ITEMS = 10;
 
 const App: React.FC = () => {
   const [scenario, setScenario] = useState<Scenario>(() => {
@@ -115,6 +118,10 @@ const App: React.FC = () => {
   };
 
   const addFood = () => {
+    if (scenario.foods.length >= MAX_FOOD_ITEMS) {
+      alert(`You can add a maximum of ${MAX_FOOD_ITEMS} food items.`);
+      return;
+    }
     const defaultEatMinutes = scenario.preferences.default_eat_minutes;
     const newFood: FoodItem = {
       name: 'New Food Item',
@@ -129,12 +136,28 @@ const App: React.FC = () => {
   };
   
   const addFoodFromDatabase = (food: FoodItem) => {
+    if (scenario.foods.length >= MAX_FOOD_ITEMS) {
+      alert(`You can add a maximum of ${MAX_FOOD_ITEMS} food items.`);
+      return;
+    }
     setScenario({ ...scenario, foods: [...scenario.foods, food] });
   };
 
   const addFoodsFromAnalysis = (newFoods: FoodItem[]) => {
-    setScenario(prev => ({ ...prev, foods: [...prev.foods, ...newFoods] }));
-    handleGamificationUpdate('AI_ANALYSIS');
+    const availableSlots = MAX_FOOD_ITEMS - scenario.foods.length;
+    if (availableSlots <= 0) {
+      alert(`Cannot add more food items. The maximum of ${MAX_FOOD_ITEMS} has been reached.`);
+      return;
+    }
+    const foodsToAdd = newFoods.slice(0, availableSlots);
+    if (newFoods.length > availableSlots) {
+      alert(`Only ${foodsToAdd.length} food item(s) could be added to stay within the ${MAX_FOOD_ITEMS} item limit.`);
+    }
+
+    if (foodsToAdd.length > 0) {
+      setScenario(prev => ({ ...prev, foods: [...prev.foods, ...foodsToAdd] }));
+      handleGamificationUpdate('AI_ANALYSIS');
+    }
   };
 
   const removeFood = (index: number) => {
@@ -232,6 +255,8 @@ const App: React.FC = () => {
     return scenario.foods.reduce((acc, food) => acc + Math.round(food.calories_kcal), 0);
   }, [scenario.foods]);
 
+  const isFoodLimitReached = scenario.foods.length >= MAX_FOOD_ITEMS;
+
   return (
     <div className="min-h-screen font-sans">
       <main className="container mx-auto px-4 py-8 md:py-12">
@@ -294,21 +319,24 @@ const App: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={addFood}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
+                disabled={isFoodLimitReached}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
               >
                 <PlusIcon />
                 Manual
               </button>
               <button
                 onClick={() => setIsDbModalOpen(true)}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
+                disabled={isFoodLimitReached}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
               >
                 <DatabaseIcon />
                 Database
               </button>
               <button
                 onClick={() => setIsCameraModalOpen(true)}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
+                disabled={isFoodLimitReached}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
               >
                 <CameraIcon />
                 With AI
@@ -321,7 +349,11 @@ const App: React.FC = () => {
                 History
               </button>
             </div>
-            <GamificationDashboard profile={profile} onViewRewardsClick={() => setIsRewardsModalOpen(true)} />
+            {isFoodLimitReached && (
+              <p className="text-center text-sm text-zinc-500 -mt-4">
+                Maximum of {MAX_FOOD_ITEMS} food items reached.
+              </p>
+            )}
             <UserInputCard
               user={scenario.user}
               preferences={scenario.preferences}
@@ -334,6 +366,7 @@ const App: React.FC = () => {
               options={scenario.options}
               onOptionChange={(key, value) => setScenario({ ...scenario, options: { ...scenario.options, [key]: value } })}
             />
+            <GamificationDashboard profile={profile} onViewRewardsClick={() => setIsRewardsModalOpen(true)} />
             <div className="flex flex-col gap-4">
                <button
                   onClick={handleReset}
@@ -373,7 +406,7 @@ const App: React.FC = () => {
             <div className="lg:sticky lg:top-8">
               {error && <div className="bg-red-500/20 border border-red-500/50 text-red-400 p-4 rounded-xl mb-4 animate-pulse">{error}</div>}
               {isLoading ? (
-                 <LoadingAnalysis />
+                 <LoadingAnalysis userName={scenario.user.name} />
               ) : computation ? (
                 <ResultsDisplay 
                     computation={computation} 

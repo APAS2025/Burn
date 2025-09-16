@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CustomActivity } from '../types';
-import { XIcon, PencilIcon, TrashIcon, PlusIcon } from './Icons';
+import { XIcon, PencilIcon, TrashIcon, PlusIcon, InfoIcon } from './Icons';
 
 interface CustomActivityModalProps {
   isOpen: boolean;
@@ -136,8 +136,11 @@ const CustomActivityModal: React.FC<CustomActivityModalProps> = ({ isOpen, onClo
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-zinc-400 mb-1 relative group">
-                        MET Value
-                        <span className="absolute bottom-full left-0 mb-2 w-64 bg-zinc-800 text-zinc-300 text-xs rounded-lg p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-zinc-700 shadow-lg">
+                        <div className="flex items-center gap-1.5 cursor-help">
+                            MET Value
+                            <InfoIcon className="w-4 h-4 text-zinc-500 group-hover:text-amber-400 transition-colors" />
+                        </div>
+                        <span className="absolute bottom-full left-0 mb-2 w-64 bg-zinc-800 text-zinc-300 text-xs rounded-lg p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-zinc-700 shadow-lg z-10">
                             MET (Metabolic Equivalent of Task) is a measure of exercise intensity. Walking at 3 mph is ~3.5 METs.
                         </span>
                     </label>

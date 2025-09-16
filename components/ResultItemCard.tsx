@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ComputationItem, FoodItem, SwapItem } from '../types';
 import { HeartIcon, XIcon, PlusIcon, DatabaseIcon, CameraIcon, CutleryIcon, FlameIcon } from './Icons';
@@ -20,11 +19,11 @@ const formatMinutes = (minutes: number) => {
     return `${hours}h ${mins}m`;
 };
 
-const StatDisplay: React.FC<{ icon: React.ReactNode, value: string, label: string }> = ({ icon, value, label }) => (
+const StatDisplay: React.FC<{ icon: React.ReactNode, value: string, label: string, valueClassName?: string }> = ({ icon, value, label, valueClassName = "text-white" }) => (
     <div className="flex items-center gap-3">
         <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-zinc-700/50 rounded-full">{icon}</div>
         <div>
-            <p className="font-bold text-white text-lg">{value}</p>
+            <p className={`font-bold text-lg ${valueClassName}`}>{value}</p>
             <p className="text-xs text-zinc-400">{label}</p>
         </div>
     </div>
@@ -96,8 +95,8 @@ const ResultItemCard: React.FC<ResultItemCardProps> = ({ item, swappedItem, onAd
                     <h3 className="text-xl font-bold text-white">{item.name}</h3>
                     <p className="text-sm text-zinc-400">{item.serving_label}</p>
                     <div className="mt-4 grid grid-cols-2 gap-4">
-                        <StatDisplay icon={<CutleryIcon className="w-5 h-5 text-amber-400" />} value={formatMinutes(item.eat_minutes)} label="Time to Eat" />
-                        <StatDisplay icon={<FlameIcon className="w-5 h-5 text-red-400" />} value={formatMinutes(item.burn_minutes)} label="Time to Burn" />
+                        <StatDisplay icon={<CutleryIcon className="w-5 h-5 text-amber-400" />} value={formatMinutes(item.eat_minutes)} label="Time to Eat" valueClassName="text-amber-400" />
+                        <StatDisplay icon={<FlameIcon className="w-5 h-5 text-red-400" />} value={formatMinutes(item.burn_minutes)} label="Time to Burn" valueClassName="text-red-400" />
                     </div>
                     <div className="mt-4 border-t border-zinc-700/80 pt-4">
                         <button

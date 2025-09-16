@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { MailIcon, CheckCircleIcon } from './Icons';
+import InsightsMarquee from './InsightsMarquee';
 
 const SubscriptionCard: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -54,6 +55,23 @@ const SubscriptionCard: React.FC = () => {
           </div>
         )}
       </div>
+      
+      <div className="mt-10 pt-8 border-t border-zinc-800 text-sm text-zinc-500 max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          <div>
+              <strong className="font-semibold text-zinc-300 block mb-1">Feedback-Driven</strong>
+              New insights are added daily based on your feedback.
+          </div>
+          <div className="md:border-x border-zinc-800 px-6">
+              <strong className="font-semibold text-zinc-300 block mb-1">No Fluff, No Gimmicks</strong>
+              Just pure, actionable knowledge you can trust.
+          </div>
+          <div>
+              <strong className="font-semibold text-zinc-300 block mb-1">Nothing to Sell</strong>
+              Our only goal is to inform and empower you.
+          </div>
+      </div>
+
+      <InsightsMarquee />
     </div>
   );
 };

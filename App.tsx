@@ -1,9 +1,6 @@
-
-
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Scenario, FoodItem, Computation } from './types';
-import { DEFAULT_SCENARIO, ACTIVITY_LIBRARY } from './constants';
+import { getDefaultScenario, ACTIVITY_LIBRARY } from './constants';
 import { getCalorieAnalysis } from './services/geminiService';
 import FoodInputList from './components/FoodInputList';
 import UserInputCard from './components/UserInputCard';
@@ -11,20 +8,25 @@ import OptionsCard from './components/OptionsCard';
 import ResultsDisplay from './components/ResultsDisplay';
 import FoodDatabaseModal from './components/FoodDatabaseModal';
 import CameraAnalysisModal from './components/CameraAnalysisModal';
-import { PlusIcon, SparklesIcon, DatabaseIcon, CameraIcon, ChartLineIcon, ResetIcon } from './components/Icons';
+import { PlusIcon, DatabaseIcon, CameraIcon, ChartLineIcon, ResetIcon, HistoryIcon } from './components/Icons';
 import LoadingAnalysis from './components/LoadingAnalysis';
 import EnzarkLogo from './components/EnzarkLogo';
 import ShareAppButton from './components/ShareAppButton';
 import SubscriptionCard from './components/SubscriptionCard';
+import ImageGalleryModal from './components/ImageGalleryModal';
+import * as storageService from './services/storageService';
 
 
 const App: React.FC = () => {
-  const [scenario, setScenario] = useState<Scenario>(DEFAULT_SCENARIO);
+  const [scenario, setScenario] = useState<Scenario>(() => getDefaultScenario());
   const [computation, setComputation] = useState<Computation | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isDbModalOpen, setIsDbModalOpen] = useState<boolean>(false);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState<boolean>(false);
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState<boolean>(false);
+  const [storedImages, setStoredImages] = useState<string[]>([]);
+  const [reanalyzingImage, setReanalyzingImage] = useState<string | null>(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -56,6 +58,10 @@ const App: React.FC = () => {
         }
     }
   }, []); // Run once on mount to check for incoming challenges
+
+  useEffect(() => {
+    setStoredImages(storageService.getStoredImages());
+  }, []);
 
   const updateFood = (index: number, updatedFood: FoodItem) => {
     const newFoods = [...scenario.foods];
@@ -121,10 +127,26 @@ const App: React.FC = () => {
   }, [scenario]);
 
   const handleReset = useCallback(() => {
-    setScenario(DEFAULT_SCENARIO);
+    setScenario(getDefaultScenario());
     setComputation(null);
     setError(null);
   }, []);
+
+  const handleImageAnalyzed = (imageData: string) => {
+    const newImages = storageService.addStoredImage(imageData);
+    setStoredImages(newImages);
+  };
+
+  const handleDeleteImage = (index: number) => {
+    const newImages = storageService.deleteStoredImage(index);
+    setStoredImages(newImages);
+  };
+  
+  const handleSelectImageFromGallery = (imageData: string) => {
+    setReanalyzingImage(imageData);
+    setIsGalleryModalOpen(false);
+    setIsCameraModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen font-sans">
@@ -147,7 +169,7 @@ const App: React.FC = () => {
               onUpdateFood={updateFood}
               onRemoveFood={removeFood}
             />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={addFood}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
@@ -168,6 +190,13 @@ const App: React.FC = () => {
               >
                 <CameraIcon />
                 With AI
+              </button>
+               <button
+                onClick={() => setIsGalleryModalOpen(true)}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
+              >
+                <HistoryIcon />
+                History
               </button>
             </div>
             <UserInputCard
@@ -251,12 +280,26 @@ const App: React.FC = () => {
           onAddFood={addFoodFromDatabase}
         />
       )}
+      {isGalleryModalOpen && (
+        <ImageGalleryModal
+            isOpen={isGalleryModalOpen}
+            onClose={() => setIsGalleryModalOpen(false)}
+            images={storedImages}
+            onSelectImage={handleSelectImageFromGallery}
+            onDeleteImage={handleDeleteImage}
+        />
+      )}
       {isCameraModalOpen && (
         <CameraAnalysisModal
           isOpen={isCameraModalOpen}
-          onClose={() => setIsCameraModalOpen(false)}
+          onClose={() => {
+            setIsCameraModalOpen(false);
+            setReanalyzingImage(null);
+          }}
           onAddFoods={addFoodsFromAnalysis}
           defaultEatMinutes={scenario.preferences.default_eat_minutes}
+          onImageAnalyzed={handleImageAnalyzed}
+          initialImage={reanalyzingImage}
         />
       )}
     </div>

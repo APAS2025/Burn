@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FoodItem } from '../types';
 import { getFoodAnalysisFromImage } from '../services/geminiService';
@@ -9,9 +8,11 @@ interface CameraAnalysisModalProps {
   onClose: () => void;
   onAddFoods: (foods: FoodItem[]) => void;
   defaultEatMinutes: number;
+  onImageAnalyzed: (imageData: string) => void;
+  initialImage?: string | null;
 }
 
-const CameraAnalysisModal: React.FC<CameraAnalysisModalProps> = ({ isOpen, onClose, onAddFoods, defaultEatMinutes }) => {
+const CameraAnalysisModal: React.FC<CameraAnalysisModalProps> = ({ isOpen, onClose, onAddFoods, defaultEatMinutes, onImageAnalyzed, initialImage }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -46,17 +47,27 @@ const CameraAnalysisModal: React.FC<CameraAnalysisModalProps> = ({ isOpen, onClo
 
   useEffect(() => {
     if (isOpen) {
-      startCamera();
+      if (initialImage) {
+        setCapturedImage(initialImage);
+        stopCamera();
+      } else {
+        setCapturedImage(null);
+        startCamera();
+      }
     } else {
       stopCamera();
       setCapturedImage(null);
       setError(null);
       setIsLoading(false);
+      setCameraError(null);
     }
     
-    // Cleanup on unmount
-    return () => stopCamera();
-  }, [isOpen, startCamera, stopCamera]);
+    return () => {
+      if (stream) {
+          stopCamera();
+      }
+    };
+  }, [isOpen, initialImage, startCamera, stopCamera]);
   
   const handleCapture = () => {
     if (videoRef.current && canvasRef.current) {
@@ -94,6 +105,7 @@ const CameraAnalysisModal: React.FC<CameraAnalysisModalProps> = ({ isOpen, onClo
         return;
       }
       onAddFoods(foods);
+      onImageAnalyzed(capturedImage);
       onClose();
     } catch (e) {
       console.error(e);

@@ -1,4 +1,5 @@
 
+
 import { Scenario, ActivityLibrary, FoodItem } from './types';
 
 export const ACTIVITY_LIBRARY: ActivityLibrary = {
@@ -13,7 +14,7 @@ export const ACTIVITY_LIBRARY: ActivityLibrary = {
   swimming_hard: { label: 'Swim, hard', speed_mph: null, met: 10.0 },
 };
 
-export const DEFAULT_SCENARIO: Scenario = {
+export const getDefaultScenario = (): Scenario => ({
   user: {
     weight_kg: 75,
     height_cm: null,
@@ -64,7 +65,7 @@ export const DEFAULT_SCENARIO: Scenario = {
       base_eat_minutes: 2,
     }
   ]
-};
+});
 
 export const FOOD_DATABASE: FoodItem[] = [
   // Drinks

@@ -1,9 +1,10 @@
 
 
 
+
 import React, { useState, useEffect } from 'react';
 import { Computation, User, FoodItem, SwapItem } from '../types';
-import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, ShareIcon, DownloadIcon, LinkIcon } from './Icons';
+import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, DownloadIcon } from './Icons';
 import ReportCharts from './ReportCharts';
 import EnzarkLogo from './EnzarkLogo';
 import ResultItemCard from './ResultItemCard';
@@ -11,31 +12,12 @@ import FoodDatabaseModal from './FoodDatabaseModal';
 import CameraAnalysisModal from './CameraAnalysisModal';
 import * as storageService from '../services/storageService';
 import WeeklyChallengeCard from './WeeklyChallengeCard';
+import ChallengeShareButton from './ChallengeShareButton';
 
 
 // Declarations for CDN libraries
 declare const html2canvas: any;
 declare const jspdf: any;
-
-// FIX: Update type signature to accept items with a subset of FoodItem properties,
-// making it compatible with both ComputationItem and FoodItem arrays.
-const generateChallengeLink = (items: Pick<FoodItem, 'name' | 'serving_label' | 'calories_kcal' | 'eat_minutes'>[]): string => {
-    const challengeFoods: Omit<FoodItem, 'servings' | 'base_calories_kcal' | 'base_eat_minutes'>[] = items.map(item => ({
-        name: item.name,
-        serving_label: item.serving_label,
-        calories_kcal: item.calories_kcal,
-        eat_minutes: item.eat_minutes,
-    }));
-    
-    const jsonString = JSON.stringify(challengeFoods);
-    const base64String = btoa(jsonString);
-    
-    const url = new URL(window.location.href);
-    url.search = `?challenge=${encodeURIComponent(base64String)}`;
-    url.hash = '';
-
-    return url.toString();
-};
 
 // A simple markdown renderer component
 const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
@@ -75,11 +57,11 @@ const ShareButton: React.FC<{ text: string; withLabel?: boolean; isLink?: boolea
 
   const iconSize = withLabel ? 'w-4 h-4' : 'w-5 h-5';
   
-  const idleButtonText = isLink ? "Copy Link" : "Copy Text";
+  const idleButtonText = "Copy Text";
 
   const stateConfig = {
     idle: {
-      icon: isLink ? <LinkIcon className={iconSize} /> : <ClipboardIcon className={iconSize} />,
+      icon: <ClipboardIcon className={iconSize} />,
       text: idleButtonText,
       className: 'bg-zinc-700 hover:bg-zinc-600 text-zinc-200'
     },
@@ -127,7 +109,6 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
 
 
   const { meta, items, totals, report, options, warnings } = computation;
-  const challengeLink = generateChallengeLink(items);
 
   useEffect(() => {
     if (computation) {
@@ -235,7 +216,11 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
                     <EnzarkLogo />
                     <div className="flex items-center gap-2">
                         <ShareButton text={totals.shareable_card_text} />
-                        <ShareButton text={challengeLink} withLabel={false} isLink={true}/>
+                        <ChallengeShareButton 
+                            items={items}
+                            totalCalories={totals.calories_kcal}
+                            challengerName={user.name}
+                        />
                     </div>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-extrabold text-white">{report.title}</h2>

@@ -79,7 +79,7 @@ export interface ContextualAnchors {
 }
 
 export interface ComputationItem {
-  name: string;
+  name:string;
   serving_label: string;
   calories_kcal: number;
   eat_minutes: number;
@@ -156,6 +156,8 @@ export type AchievementKey = 'firstStep' | 'savvySwapper' | 'calorieCommando' | 
 
 export interface GamificationProfile {
   wellnessPoints: number;
+  weeklyWellnessPoints: number;
+  lastWeeklyPointsReset: string | null;
   mindfulEatingStreak: {
     count: number;
     lastLogDate: string | null; // ISO date string YYYY-MM-DD
@@ -169,4 +171,16 @@ export interface GamificationProfile {
     totalCaloriesSaved: number;
     totalAiAnalyses: number;
   };
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  name: string;
+  points: number;
+  isUser: boolean;
+}
+
+export interface ChallengeMode {
+  challengerName: string | null;
+  targetCalories: number;
 }

@@ -1,6 +1,6 @@
 // FIX: Import `useMemo` from React to resolve 'Cannot find name' error.
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { Scenario, FoodItem, Computation, CustomActivity, GamificationProfile } from './types';
+import { Scenario, FoodItem, Computation, CustomActivity, GamificationProfile, ChallengeMode } from './types';
 import { getDefaultScenario, ACTIVITY_LIBRARY } from './constants';
 import { getCalorieAnalysis } from './services/geminiService';
 import FoodInputList from './components/FoodInputList';
@@ -16,6 +16,7 @@ import ShareAppButton from './components/ShareAppButton';
 import SubscriptionCard from './components/SubscriptionCard';
 import ImageGalleryModal from './components/ImageGalleryModal';
 import GamificationDashboard from './components/GamificationDashboard';
+import ChallengeBanner from './components/ChallengeBanner';
 import * as storageService from './services/storageService';
 
 
@@ -36,38 +37,50 @@ const App: React.FC = () => {
   const [reanalyzingImage, setReanalyzingImage] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'setup' | 'results'>('setup');
   const [profile, setProfile] = useState<GamificationProfile>(storageService.getGamificationProfile());
+  const [challengeMode, setChallengeMode] = useState<ChallengeMode | null>(null);
 
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const challengeData = urlParams.get('challenge');
+    const challengeDataParam = urlParams.get('beatmymeal');
 
-    if (challengeData) {
+    if (challengeDataParam) {
         try {
-            const decodedString = atob(challengeData);
-            const foodsFromChallenge: Omit<FoodItem, 'servings' | 'base_calories_kcal' | 'base_eat_minutes'>[] = JSON.parse(decodedString);
+            const decodedString = atob(challengeDataParam);
+            const challengeData = JSON.parse(decodedString);
 
-            if (Array.isArray(foodsFromChallenge) && foodsFromChallenge.length > 0) {
-                const fullFoodItems: FoodItem[] = foodsFromChallenge.map(f => ({
-                    ...f,
-                    servings: 1,
-                    base_calories_kcal: f.calories_kcal,
-                    base_eat_minutes: f.eat_minutes,
-                }));
+            if (challengeData.foods && challengeData.totalCalories) {
+                const { foods, totalCalories, challengerName } = challengeData;
+                
+                setChallengeMode({
+                    challengerName: challengerName || null,
+                    targetCalories: totalCalories,
+                });
 
-                setScenario(prevScenario => ({
-                    ...prevScenario,
-                    foods: fullFoodItems,
-                }));
+                if (Array.isArray(foods) && foods.length > 0) {
+                    const fullFoodItems: FoodItem[] = foods.map((f: any) => ({
+                        name: f.name,
+                        serving_label: f.serving_label,
+                        calories_kcal: f.calories_kcal,
+                        eat_minutes: f.eat_minutes,
+                        servings: 1,
+                        base_calories_kcal: f.calories_kcal,
+                        base_eat_minutes: f.eat_minutes,
+                    }));
+
+                    setScenario(prevScenario => ({
+                        ...prevScenario,
+                        foods: fullFoodItems,
+                    }));
+                }
             }
         } catch (e) {
             console.error("Failed to parse challenge data from URL", e);
         } finally {
-            // Clean the URL to avoid re-processing or re-sharing the same challenge
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     }
-  }, []); // Run once on mount to check for incoming challenges
+  }, []);
 
   useEffect(() => {
     setStoredImages(storageService.getStoredImages());
@@ -152,6 +165,7 @@ const App: React.FC = () => {
     setComputation(null);
     setError(null);
     setActiveView('setup');
+    setChallengeMode(null);
   }, []);
 
   const handleImageAnalyzed = (imageData: string) => {
@@ -197,6 +211,10 @@ const App: React.FC = () => {
     };
   }, [scenario.preferences.custom_activities]);
 
+  const currentTotalCalories = useMemo(() => {
+    return scenario.foods.reduce((acc, food) => acc + Math.round(food.calories_kcal), 0);
+  }, [scenario.foods]);
+
   return (
     <div className="min-h-screen font-sans">
       <main className="container mx-auto px-4 py-8 md:py-12">
@@ -240,6 +258,14 @@ const App: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Input Column */}
           <div className={`flex-col gap-8 ${activeView === 'setup' ? 'flex' : 'hidden'} lg:flex`}>
+            {challengeMode && (
+              <ChallengeBanner
+                challengerName={challengeMode.challengerName}
+                targetCalories={challengeMode.targetCalories}
+                currentCalories={currentTotalCalories}
+                onDismiss={() => setChallengeMode(null)}
+              />
+            )}
             <FoodInputList
               foods={scenario.foods}
               onUpdateFood={updateFood}

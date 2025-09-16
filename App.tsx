@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Scenario, FoodItem, Computation } from './types';
 import { DEFAULT_SCENARIO, ACTIVITY_LIBRARY } from './constants';
 import { getCalorieAnalysis } from './services/geminiService';
@@ -21,6 +21,30 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDbModalOpen, setIsDbModalOpen] = useState<boolean>(false);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const challengeData = urlParams.get('challenge');
+
+    if (challengeData) {
+        try {
+            const decodedString = atob(challengeData);
+            const foodsFromChallenge: FoodItem[] = JSON.parse(decodedString);
+
+            if (Array.isArray(foodsFromChallenge) && foodsFromChallenge.length > 0) {
+                setScenario(prevScenario => ({
+                    ...prevScenario,
+                    foods: foodsFromChallenge,
+                }));
+            }
+        } catch (e) {
+            console.error("Failed to parse challenge data from URL", e);
+        } finally {
+            // Clean the URL to avoid re-processing or re-sharing the same challenge
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }
+  }, []); // Run once on mount to check for incoming challenges
 
   const updateFood = (index: number, updatedFood: FoodItem) => {
     const newFoods = [...scenario.foods];

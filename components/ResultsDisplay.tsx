@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
-import { Computation, ComputationItem } from '../types';
-import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, ShareIcon, FlameIcon, CutleryIcon, CameraIcon, PlusCircleIcon, CheckCircleIcon, DownloadIcon } from './Icons';
+import { Computation, ComputationItem, FoodItem } from '../types';
+import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, ShareIcon, FlameIcon, CutleryIcon, CameraIcon, PlusCircleIcon, CheckCircleIcon, DownloadIcon, LinkIcon } from './Icons';
 import ComparisonView from './ComparisonView';
 import ReportCharts from './ReportCharts';
 import EnzarkLogo from './EnzarkLogo';
@@ -9,6 +10,26 @@ import EnzarkLogo from './EnzarkLogo';
 // Declarations for CDN libraries
 declare const html2canvas: any;
 declare const jspdf: any;
+
+const generateChallengeLink = (items: ComputationItem[] | FoodItem[]): string => {
+    const challengeFoods: Omit<FoodItem, 'id'>[] = items.map(item => ({
+        name: item.name,
+        serving_label: item.serving_label,
+        calories_kcal: item.calories_kcal,
+        eat_minutes: item.eat_minutes,
+    }));
+    
+    const jsonString = JSON.stringify(challengeFoods);
+    const base64String = btoa(jsonString);
+    
+    const url = new URL(window.location.href);
+    url.search = `?challenge=${encodeURIComponent(base64String)}`;
+    
+    // Clear hash if present
+    url.hash = '';
+
+    return url.toString();
+};
 
 // A simple markdown renderer component
 const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
@@ -25,7 +46,7 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
     return <div className="prose prose-invert text-zinc-300" dangerouslySetInnerHTML={{ __html: formattedContent }} />;
 };
 
-const ShareButton: React.FC<{ text: string; withLabel?: boolean }> = ({ text, withLabel = false }) => {
+const ShareButton: React.FC<{ text: string; withLabel?: boolean; isLink?: boolean }> = ({ text, withLabel = false, isLink = false }) => {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
 
   useEffect(() => {
@@ -47,11 +68,13 @@ const ShareButton: React.FC<{ text: string; withLabel?: boolean }> = ({ text, wi
 
   const iconSize = withLabel ? 'w-4 h-4' : 'w-5 h-5';
   
+  const idleButtonText = isLink ? "Copy Link" : "Copy Text";
+
   const stateConfig = {
     idle: {
-      label: 'Copy to clipboard',
-      icon: <ClipboardIcon className={iconSize} />,
-      buttonText: 'Copy Text',
+      label: isLink ? 'Copy challenge link' : 'Copy to clipboard',
+      icon: isLink ? <LinkIcon className={iconSize} /> : <ClipboardIcon className={iconSize} />,
+      buttonText: idleButtonText,
       labelClasses: 'bg-zinc-700/50 border-zinc-600 hover:bg-zinc-700 text-zinc-200',
       iconClasses: 'text-zinc-400 hover:text-amber-400',
     },
@@ -109,6 +132,7 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
     const { totals, items } = computation;
     const eatTime = totals.eat_minutes;
     const burnTime = totals.burn_minutes;
+    const challengeLink = generateChallengeLink(items);
     
     return (
         <div 
@@ -155,11 +179,11 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
                 </div>
                 <div className="mt-6 flex flex-col items-center gap-4">
                     <div className="w-full max-w-xs grid grid-cols-1 gap-3">
-                       <ShareButton text={computation.totals.shareable_card_text} withLabel />
+                       <ShareButton text={challengeLink} withLabel isLink />
                     </div>
                     <div className="flex items-center gap-2 text-sm text-zinc-400">
-                        <CameraIcon className="w-4 h-4" />
-                        <span>Tip: Take a screenshot to share!</span>
+                        <LinkIcon className="w-4 h-4" />
+                        <span>Copy the link and send it to a friend!</span>
                     </div>
                 </div>
             </div>
@@ -183,6 +207,7 @@ const ResultItemCard: React.FC<{
     isSelectionDisabled: boolean,
     onSelect: (index: number) => void
 }> = ({ item, activityLabel, includeVisualHints, index, isSelected, isSelectionDisabled, onSelect }) => {
+    const singleItemChallengeLink = generateChallengeLink([item]);
     return (
         <div
             className="bg-zinc-900 p-4 rounded-xl border border-zinc-800 animate-pop-in transition-all duration-200 hover:scale-[1.02] hover:border-zinc-700"
@@ -203,7 +228,7 @@ const ResultItemCard: React.FC<{
                     >
                         {isSelected ? <CheckCircleIcon /> : <PlusCircleIcon />}
                     </button>
-                    <ShareButton text={item.shareable_card_text} />
+                    <ShareButton text={singleItemChallengeLink} isLink />
                 </div>
             </div>
             

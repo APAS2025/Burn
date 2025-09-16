@@ -5,7 +5,6 @@ const loadingMessages = [
   "Running the numbers...",
   "Hope you're ready for the truth...",
   "Calculating the cost of that cookie.",
-  "This is the easy part. The workout is next.",
   "No shortcuts. No excuses. Just the numbers.",
   "Get ready to face your reality check.",
 ];

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import EnzarkLogo from './EnzarkLogo';
+import { SparklesIcon } from './Icons';
 
 const loadingMessages = [
-  "Enzark is running the numbers. Don't disappoint him.",
+  "Running the numbers...",
   "Hope you're ready for the truth...",
   "Calculating the cost of that cookie.",
   "This is the easy part. The workout is next.",
@@ -26,7 +26,7 @@ const LoadingAnalysis: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm p-8 text-center animate-[fadeIn_0.5s_ease-out]">
-      <EnzarkLogo className="w-48 h-48 animate-[intermittentShake_4s_ease-in-out_infinite]" />
+      <SparklesIcon className="w-48 h-48 text-emerald-400 animate-pulse" />
       
       <p key={currentMessageIndex} className="text-slate-200 text-xl font-semibold mt-8 h-8 animate-[fadeIn_0.5s]">
         {loadingMessages[currentMessageIndex]}

@@ -12,7 +12,7 @@ import CameraAnalysisModal from './components/CameraAnalysisModal';
 import { PlusIcon, SparklesIcon, DatabaseIcon, CameraIcon } from './components/Icons';
 import LoadingAnalysis from './components/LoadingAnalysis';
 import ThemeToggle from './components/ThemeToggle';
-import EnzarkLogo from './components/EnzarkLogo';
+
 
 const App: React.FC = () => {
   const [scenario, setScenario] = useState<Scenario>(DEFAULT_SCENARIO);
@@ -88,11 +88,8 @@ const App: React.FC = () => {
           <div className="absolute top-0 right-0">
             <ThemeToggle />
           </div>
-          <div className="flex justify-center mb-4">
-            <EnzarkLogo className="w-24 h-24 md:w-32 md:h-32" />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-red-500 to-yellow-500">
-            Enzark's Reality Check
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-red-500 to-yellow-500 pt-12 md:pt-16">
+            Calorie Reality Check
           </h1>
           <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
             Gamify your diet. Discover the surprising amount of exercise needed to burn off your favorite foods.

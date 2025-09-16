@@ -26,7 +26,8 @@ export const getDefaultScenario = (): Scenario => ({
     activity: "walking_3_mph", 
     pace_override: null,
     steps_per_mile: 2000,
-    weight_unit: 'kg'
+    weight_unit: 'kg',
+    custom_activities: [],
   },
   options: {
     include_personalization: true,

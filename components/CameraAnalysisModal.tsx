@@ -101,7 +101,6 @@ const CameraAnalysisModal: React.FC<CameraAnalysisModalProps> = ({ isOpen, onClo
       const foods = await getFoodAnalysisFromImage(base64Image, defaultEatMinutes);
       if (foods.length === 0) {
         setError("Could not identify any food items. Please try a clearer picture.");
-        setIsLoading(false);
         return;
       }
       onAddFoods(foods);

@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Scenario, FoodItem, Computation } from './types';
+// FIX: Import `useMemo` from React to resolve 'Cannot find name' error.
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { Scenario, FoodItem, Computation, CustomActivity } from './types';
 import { getDefaultScenario, ACTIVITY_LIBRARY } from './constants';
 import { getCalorieAnalysis } from './services/geminiService';
 import FoodInputList from './components/FoodInputList';
@@ -18,7 +19,12 @@ import * as storageService from './services/storageService';
 
 
 const App: React.FC = () => {
-  const [scenario, setScenario] = useState<Scenario>(() => getDefaultScenario());
+  const [scenario, setScenario] = useState<Scenario>(() => {
+    const defaultScenario = getDefaultScenario();
+    const savedActivities = storageService.getCustomActivities();
+    defaultScenario.preferences.custom_activities = savedActivities;
+    return defaultScenario;
+  });
   const [computation, setComputation] = useState<Computation | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +133,10 @@ const App: React.FC = () => {
   }, [scenario]);
 
   const handleReset = useCallback(() => {
-    setScenario(getDefaultScenario());
+    const scenario = getDefaultScenario();
+    // Keep custom activities on reset
+    scenario.preferences.custom_activities = storageService.getCustomActivities();
+    setScenario(scenario);
     setComputation(null);
     setError(null);
   }, []);
@@ -147,6 +156,33 @@ const App: React.FC = () => {
     setIsGalleryModalOpen(false);
     setIsCameraModalOpen(true);
   };
+  
+  const handleCustomActivitiesChange = (activities: CustomActivity[]) => {
+    storageService.saveCustomActivities(activities);
+    
+    // If the currently selected activity was deleted, reset to default
+    const currentActivityKey = scenario.preferences.activity;
+    const isSelectedActivityStillPresent = 
+        Object.keys(ACTIVITY_LIBRARY).includes(currentActivityKey) ||
+        activities.some(a => a.key === currentActivityKey);
+
+    setScenario(prev => ({
+        ...prev,
+        preferences: {
+            ...prev.preferences,
+            custom_activities: activities,
+            activity: isSelectedActivityStillPresent ? currentActivityKey : 'walking_3_mph',
+        }
+    }));
+  };
+
+  const allActivities = useMemo(() => {
+    const defaultActivities = Object.entries(ACTIVITY_LIBRARY).map(([key, value]) => ({ key, ...value }));
+    return {
+        default: defaultActivities,
+        custom: scenario.preferences.custom_activities,
+    };
+  }, [scenario.preferences.custom_activities]);
 
   return (
     <div className="min-h-screen font-sans">
@@ -202,9 +238,10 @@ const App: React.FC = () => {
             <UserInputCard
               user={scenario.user}
               preferences={scenario.preferences}
-              activities={Object.entries(ACTIVITY_LIBRARY).map(([key, value]) => ({ key, label: value.label }))}
+              activities={allActivities}
               onUserChange={(user) => setScenario({ ...scenario, user })}
               onPreferencesChange={(key, value) => setScenario(prev => ({ ...prev, preferences: { ...prev.preferences, [key]: value }}))}
+              onCustomActivitiesChange={handleCustomActivitiesChange}
             />
             <OptionsCard
               options={scenario.options}

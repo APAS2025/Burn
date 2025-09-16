@@ -7,12 +7,20 @@ export interface User {
   age: number | null;
 }
 
+export interface CustomActivity {
+  key: string;
+  label: string;
+  met: number;
+  speed_mph: number | null;
+}
+
 export interface Preferences {
   default_eat_minutes: number;
   activity: string;
   pace_override: number | null;
   steps_per_mile: number;
   weight_unit: 'kg' | 'lbs';
+  custom_activities: CustomActivity[];
 }
 
 export interface Options {

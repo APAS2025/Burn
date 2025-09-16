@@ -1,13 +1,18 @@
-
 import React, { useState, useEffect } from 'react';
-import { User, Preferences } from '../types';
+import { User, Preferences, CustomActivity } from '../types';
+import { CogIcon } from './Icons';
+import CustomActivityModal from './CustomActivityModal';
 
 interface UserInputCardProps {
   user: User;
   preferences: Preferences;
-  activities: { key: string; label: string }[];
+  activities: {
+    default: { key: string; label: string }[];
+    custom: CustomActivity[];
+  };
   onUserChange: (user: User) => void;
   onPreferencesChange: <K extends keyof Preferences>(key: K, value: Preferences[K]) => void;
+  onCustomActivitiesChange: (activities: CustomActivity[]) => void;
 }
 
 const KG_TO_LBS = 2.20462;
@@ -41,8 +46,9 @@ const UnitToggle: React.FC<{
 };
 
 
-const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activities, onUserChange, onPreferencesChange }) => {
+const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activities, onUserChange, onPreferencesChange, onCustomActivitiesChange }) => {
   const [displayWeight, setDisplayWeight] = useState<string>('');
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
 
   useEffect(() => {
     if (user.weight_kg === null || isNaN(user.weight_kg)) {
@@ -87,6 +93,7 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activi
   };
   
   return (
+    <>
     <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 border-t-amber-500/20">
       <h3 className="text-xl font-bold text-white mb-4">Personalization</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -152,7 +159,16 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activi
           </select>
         </div>
         <div className="md:col-span-2">
-          <label htmlFor="activity" className="block text-sm font-medium text-zinc-400 mb-1">Burn Activity</label>
+            <div className="flex justify-between items-center mb-1">
+                 <label htmlFor="activity" className="block text-sm font-medium text-zinc-400">Burn Activity</label>
+                 <button
+                    onClick={() => setIsActivityModalOpen(true)}
+                    className="flex items-center gap-1.5 text-xs text-amber-400/80 hover:text-amber-400 font-semibold transition-colors"
+                 >
+                    <CogIcon className="w-4 h-4" />
+                    Manage
+                 </button>
+            </div>
           <select
             id="activity"
             name="activity"
@@ -160,13 +176,31 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activi
             onChange={(e) => onPreferencesChange('activity', e.target.value)}
             className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-2 px-3 text-white focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition appearance-none"
           >
-            {activities.map(({ key, label }) => (
-              <option key={key} value={key}>{label}</option>
-            ))}
+            <optgroup label="Default Activities">
+                {activities.default.map(({ key, label }) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+            </optgroup>
+            {activities.custom.length > 0 && (
+                <optgroup label="Your Custom Activities">
+                    {activities.custom.map(({ key, label }) => (
+                        <option key={key} value={key}>{label}</option>
+                    ))}
+                </optgroup>
+            )}
           </select>
         </div>
       </div>
     </div>
+    {isActivityModalOpen && (
+        <CustomActivityModal
+            isOpen={isActivityModalOpen}
+            onClose={() => setIsActivityModalOpen(false)}
+            activities={preferences.custom_activities}
+            onSave={onCustomActivitiesChange}
+        />
+    )}
+    </>
   );
 };
 

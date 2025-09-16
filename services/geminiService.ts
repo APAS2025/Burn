@@ -228,8 +228,16 @@ export async function getFoodAnalysisFromImage(base64Image: string, defaultEatMi
     });
 
     const jsonText = response.text.trim();
-    const result = JSON.parse(jsonText);
-    return result as FoodItem[];
+    const analyzedFoods: Pick<FoodItem, 'name' | 'serving_label' | 'calories_kcal' | 'eat_minutes'>[] = JSON.parse(jsonText);
+    
+    const fullFoodItems: FoodItem[] = analyzedFoods.map(food => ({
+      ...food,
+      servings: 1,
+      base_calories_kcal: food.calories_kcal,
+      base_eat_minutes: food.eat_minutes,
+    }));
+    
+    return fullFoodItems;
   } catch (error) {
     console.error("Gemini image analysis failed:", error);
     throw new Error("Failed to analyze food from image.");

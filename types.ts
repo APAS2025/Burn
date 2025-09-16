@@ -27,8 +27,11 @@ export interface Options {
 export interface FoodItem {
   name: string;
   serving_label: string;
-  calories_kcal: number;
-  eat_minutes: number;
+  calories_kcal: number; // This is the TOTAL calories for the given servings
+  eat_minutes: number;   // This is the TOTAL eat minutes for the given servings
+  servings: number;
+  base_calories_kcal: number; // Calories for 1 serving
+  base_eat_minutes: number;   // Eat minutes for 1 serving
 }
 
 export interface Scenario {

@@ -31,12 +31,19 @@ const App: React.FC = () => {
     if (challengeData) {
         try {
             const decodedString = atob(challengeData);
-            const foodsFromChallenge: FoodItem[] = JSON.parse(decodedString);
+            const foodsFromChallenge: Omit<FoodItem, 'servings' | 'base_calories_kcal' | 'base_eat_minutes'>[] = JSON.parse(decodedString);
 
             if (Array.isArray(foodsFromChallenge) && foodsFromChallenge.length > 0) {
+                const fullFoodItems: FoodItem[] = foodsFromChallenge.map(f => ({
+                    ...f,
+                    servings: 1,
+                    base_calories_kcal: f.calories_kcal,
+                    base_eat_minutes: f.eat_minutes,
+                }));
+
                 setScenario(prevScenario => ({
                     ...prevScenario,
-                    foods: foodsFromChallenge,
+                    foods: fullFoodItems,
                 }));
             }
         } catch (e) {
@@ -55,11 +62,15 @@ const App: React.FC = () => {
   };
 
   const addFood = () => {
+    const defaultEatMinutes = scenario.preferences.default_eat_minutes;
     const newFood: FoodItem = {
       name: 'New Food Item',
       serving_label: '1 serving',
       calories_kcal: 100,
-      eat_minutes: scenario.preferences.default_eat_minutes,
+      eat_minutes: defaultEatMinutes,
+      servings: 1,
+      base_calories_kcal: 100,
+      base_eat_minutes: defaultEatMinutes,
     };
     setScenario({ ...scenario, foods: [...scenario.foods, newFood] });
   };

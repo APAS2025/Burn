@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { Scenario, FoodItem, Computation } from './types';
 import { DEFAULT_SCENARIO, ACTIVITY_LIBRARY } from './constants';
@@ -14,6 +15,7 @@ import { PlusIcon, SparklesIcon, DatabaseIcon, CameraIcon, ChartLineIcon, ResetI
 import LoadingAnalysis from './components/LoadingAnalysis';
 import EnzarkLogo from './components/EnzarkLogo';
 import ShareAppButton from './components/ShareAppButton';
+import SubscriptionCard from './components/SubscriptionCard';
 
 
 const App: React.FC = () => {
@@ -235,6 +237,9 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+      <section className="container mx-auto px-4">
+        <SubscriptionCard />
+      </section>
       <footer className="container mx-auto flex justify-center items-center py-6">
         <EnzarkLogo />
       </footer>

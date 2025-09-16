@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Computation, ComputationItem } from '../types';
 import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, ShareIcon, FlameIcon, CutleryIcon, CameraIcon, PlusCircleIcon, CheckCircleIcon, DownloadIcon } from './Icons';
 import ComparisonView from './ComparisonView';
+import ReportCharts from './ReportCharts';
 import EnzarkLogo from './EnzarkLogo';
 
 
@@ -15,13 +16,13 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
     const formattedContent = content
         .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mb-4 text-white">$1</h1>')
         .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-6 mb-3 text-white">$1</h2>')
-        .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2 text-slate-200">$1</h3>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-emerald-400">$1</strong>')
+        .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2 text-zinc-200">$1</h3>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-amber-400">$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/^- (.*$)/gim, '<li class="ml-6 list-disc">$1</li>')
         .replace(/\n/g, '<br />');
 
-    return <div className="prose prose-invert text-slate-300" dangerouslySetInnerHTML={{ __html: formattedContent }} />;
+    return <div className="prose prose-invert text-zinc-300" dangerouslySetInnerHTML={{ __html: formattedContent }} />;
 };
 
 const ShareButton: React.FC<{ text: string; withLabel?: boolean }> = ({ text, withLabel = false }) => {
@@ -51,8 +52,8 @@ const ShareButton: React.FC<{ text: string; withLabel?: boolean }> = ({ text, wi
       label: 'Copy to clipboard',
       icon: <ClipboardIcon className={iconSize} />,
       buttonText: 'Copy Text',
-      labelClasses: 'bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200',
-      iconClasses: 'text-slate-400 hover:text-emerald-400',
+      labelClasses: 'bg-zinc-700/50 border-zinc-600 hover:bg-zinc-700 text-zinc-200',
+      iconClasses: 'text-zinc-400 hover:text-amber-400',
     },
     copied: {
       label: 'Copied!',
@@ -109,9 +110,6 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
     const eatTime = totals.eat_minutes;
     const burnTime = totals.burn_minutes;
     
-    const ratio = burnTime > 0 ? eatTime / burnTime : 0;
-    const eatBarWidth = Math.max(5, ratio * 100);
-
     return (
         <div 
             className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-[fadeIn_0.3s_ease-out]"
@@ -120,47 +118,38 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
             role="dialog"
         >
             <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-                <div className="aspect-[9/10] bg-slate-900 rounded-3xl border border-emerald-500/30 p-6 flex flex-col text-white shadow-2xl shadow-emerald-500/10" style={{ backgroundImage: 'linear-gradient(to bottom right, #0f172a, #1e293b)' }}>
+                <div className="aspect-[9/10] bg-zinc-900 rounded-3xl border border-amber-500/20 p-6 flex flex-col text-white shadow-2xl shadow-amber-500/10">
                     <div className="text-center">
-                        <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">Enzark Reality Check</h2>
+                        <h2 className="text-xl font-bold text-amber-400">Enzark Reality Check</h2>
                     </div>
                     
                     <div className="flex-1 flex flex-col justify-center items-center my-4">
                          <div className="text-center">
-                            <div className="text-sm text-slate-400">Time to Eat</div>
+                            <div className="text-sm text-zinc-400">Time to Eat</div>
                             <div className="text-4xl font-bold flex items-center gap-2">
-                                <CutleryIcon className="w-6 h-6 text-slate-400" />
+                                <CutleryIcon className="w-6 h-6 text-zinc-400" />
                                 {formatMinutes(eatTime)}
                             </div>
                         </div>
-                        <div className="text-6xl font-light text-slate-600 my-2">vs</div>
+                        <div className="text-6xl font-light text-zinc-600 my-2">vs</div>
                          <div className="text-center">
-                            <div className="text-sm text-emerald-300">Time to Burn</div>
-                            <div className="text-4xl font-bold text-emerald-300 flex items-center gap-2">
+                            <div className="text-sm text-red-500">Time to Burn</div>
+                            <div className="text-4xl font-bold text-red-500 flex items-center gap-2">
                                 <FlameIcon className="w-6 h-6" />
                                 {formatMinutes(burnTime)}
                             </div>
                         </div>
                     </div>
 
-                    <div className="space-y-2 mb-4">
-                        <div className="w-full bg-slate-700 rounded-full h-3">
-                            <div className="bg-slate-500 h-3 rounded-full" style={{ width: `${eatBarWidth}%` }}></div>
-                        </div>
-                        <div className="w-full bg-slate-700 rounded-full h-3">
-                            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-3 rounded-full" style={{ width: '100%' }}></div>
-                        </div>
-                    </div>
-
                     <div className="text-center text-lg font-bold">
-                        {totals.calories_kcal.toLocaleString()} <span className="text-base font-normal text-slate-400">Total Calories</span>
+                        {totals.calories_kcal.toLocaleString()} <span className="text-base font-normal text-zinc-400">Total Calories</span>
                     </div>
 
-                    <div className="text-xs text-slate-500 text-center mt-2 border-t border-slate-700 pt-3">
+                    <div className="text-xs text-zinc-500 text-center mt-2 border-t border-zinc-700 pt-3">
                         {items.map(item => item.name).join(' • ')}
                     </div>
 
-                    <div className="mt-auto text-center text-xs text-slate-600 font-semibold tracking-wider pt-2">
+                    <div className="mt-auto text-center text-xs text-zinc-600 font-semibold tracking-wider pt-2">
                         POWERED BY ENZARK
                     </div>
                 </div>
@@ -168,7 +157,7 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
                     <div className="w-full max-w-xs grid grid-cols-1 gap-3">
                        <ShareButton text={computation.totals.shareable_card_text} withLabel />
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
+                    <div className="flex items-center gap-2 text-sm text-zinc-400">
                         <CameraIcon className="w-4 h-4" />
                         <span>Tip: Take a screenshot to share!</span>
                     </div>
@@ -176,7 +165,7 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
             </div>
             <button 
                 onClick={onClose} 
-                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-all transform hover:scale-110"
+                className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-all transform hover:scale-110"
                 aria-label="Close modal"
             >
                 <XIcon className="w-8 h-8" />
@@ -194,17 +183,15 @@ const ResultItemCard: React.FC<{
     isSelectionDisabled: boolean,
     onSelect: (index: number) => void
 }> = ({ item, activityLabel, includeVisualHints, index, isSelected, isSelectionDisabled, onSelect }) => {
-    const burnRatio = Math.max(0, (item.burn_minutes / (item.burn_minutes + item.eat_minutes)) * 100);
-
     return (
         <div
-            className="bg-slate-800/40 backdrop-blur-xl p-4 rounded-2xl border border-slate-700/80 animate-pop-in transition-all duration-200 hover:scale-[1.02] hover:shadow-lg dark:hover:shadow-emerald-900/50"
+            className="bg-zinc-900 p-4 rounded-xl border border-zinc-800 animate-pop-in transition-all duration-200 hover:scale-[1.02] hover:border-zinc-700"
             style={{ animationDelay: `${index * 80}ms` }}
         >
             <div className="flex justify-between items-start">
                 <div>
                     <h4 className="font-bold text-white text-lg">{item.name}</h4>
-                    <p className="text-sm text-slate-300">{item.serving_label} - {item.calories_kcal} kcal</p>
+                    <p className="text-sm text-zinc-400">{item.serving_label} - {item.calories_kcal} kcal</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
@@ -212,7 +199,7 @@ const ResultItemCard: React.FC<{
                         disabled={isSelectionDisabled}
                         title={isSelected ? 'Remove from comparison' : 'Add to comparison'}
                         aria-label={isSelected ? 'Remove from comparison' : 'Add to comparison'}
-                        className={`transition-all duration-200 hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed ${isSelected ? 'text-emerald-400' : 'text-slate-400 hover:text-emerald-400'}`}
+                        className={`transition-all duration-200 hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed ${isSelected ? 'text-amber-400' : 'text-zinc-500 hover:text-amber-400'}`}
                     >
                         {isSelected ? <CheckCircleIcon /> : <PlusCircleIcon />}
                     </button>
@@ -221,31 +208,19 @@ const ResultItemCard: React.FC<{
             </div>
             
             <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-slate-900/60 p-3 rounded-lg text-center">
-                    <div className="text-xs text-slate-400 mb-1">Eat Time</div>
+                <div className="bg-zinc-800/70 p-3 rounded-lg text-center">
+                    <div className="text-xs text-zinc-400 mb-1">Eat Time</div>
                     <div className="font-bold text-lg text-white">{formatMinutes(item.eat_minutes)}</div>
                 </div>
-                <div className="bg-slate-900/60 p-3 rounded-lg text-center">
-                    <div className="text-xs text-slate-400 mb-1">Burn Time</div>
-                    <div className="font-bold text-lg text-emerald-400">{formatMinutes(item.burn_minutes)}</div>
+                <div className="bg-zinc-800/70 p-3 rounded-lg text-center">
+                    <div className="text-xs text-zinc-400 mb-1">Burn Time</div>
+                    <div className="font-bold text-lg text-red-500">{formatMinutes(item.burn_minutes)}</div>
                 </div>
             </div>
             
-            {includeVisualHints && (
-              <div className="mt-4">
-                  <div className="w-full bg-slate-700 rounded-full h-2.5">
-                      <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2.5 rounded-full" style={{ width: `${burnRatio}%` }}></div>
-                  </div>
-                  <div className="text-xs text-slate-400 mt-1 flex justify-between">
-                      <span>Eat</span>
-                      <span>Burn</span>
-                  </div>
-              </div>
-            )}
-            
             {item.shock_factor && (
-                 <div className="mt-4 pt-4 border-t border-slate-700">
-                    <p className="text-sm text-slate-300">
+                 <div className="mt-4 pt-4 border-t border-zinc-800">
+                    <p className="text-sm text-zinc-300">
                         <span className="font-semibold text-amber-400">Shock Factor ({item.shock_factor.servings_multiplier}x):</span> {formatMinutes(item.shock_factor.burn_minutes)} burn time
                     </p>
                  </div>
@@ -263,23 +238,28 @@ const PDFReport: React.FC<{ computation: Computation }> = ({ computation }) => {
             </header>
 
             <section className="my-8">
-                <h2 className="text-3xl font-extrabold text-slate-900">{computation.report.title}</h2>
+                <h2 className="text-3xl font-extrabold text-amber-500">{computation.report.title}</h2>
                 <p className="mt-2 text-slate-600 text-lg">{computation.report.summary}</p>
             </section>
 
             <section className="grid grid-cols-3 gap-6 text-center my-10">
                 <div className="bg-slate-100 p-4 rounded-lg">
                     <div className="text-sm text-slate-500">Total Calories</div>
-                    <div className="text-4xl font-bold text-emerald-600">{computation.totals.calories_kcal.toLocaleString()}</div>
+                    <div className="text-4xl font-bold text-amber-500">{computation.totals.calories_kcal.toLocaleString()}</div>
                 </div>
                 <div className="bg-slate-100 p-4 rounded-lg">
                     <div className="text-sm text-slate-500">Total Burn Time</div>
-                    <div className="text-4xl font-bold text-emerald-600">{formatMinutes(computation.totals.burn_minutes)}</div>
+                    <div className="text-4xl font-bold text-red-600">{formatMinutes(computation.totals.burn_minutes)}</div>
                 </div>
                 <div className="bg-slate-100 p-4 rounded-lg">
                     <div className="text-sm text-slate-500">Annualized</div>
-                    <div className="text-4xl font-bold text-emerald-600">~{computation.totals.annualized.pounds_equiv.toFixed(1)} <span className="text-2xl">lbs/yr</span></div>
+                    <div className="text-4xl font-bold text-red-600">~{computation.totals.annualized.pounds_equiv.toFixed(1)} <span className="text-2xl">lbs/yr</span></div>
                 </div>
+            </section>
+            
+            <section className="my-8">
+                <h3 className="text-2xl font-bold text-slate-800 mb-4">Visual Analysis</h3>
+                <ReportCharts computation={computation} theme="light" />
             </section>
 
             <section>
@@ -300,7 +280,7 @@ const PDFReport: React.FC<{ computation: Computation }> = ({ computation }) => {
                                 </div>
                                 <div className="p-3 text-center font-medium text-slate-700">{item.calories_kcal.toLocaleString()} kcal</div>
                                 <div className="p-3 text-center font-medium text-slate-700">{formatMinutes(item.eat_minutes)}</div>
-                                <div className="p-3 text-center font-bold text-emerald-600">{formatMinutes(item.burn_minutes)}</div>
+                                <div className="p-3 text-center font-bold text-red-600">{formatMinutes(item.burn_minutes)}</div>
                             </div>
                         ))}
                     </div>
@@ -394,10 +374,10 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
 
   return (
     <>
-    <div className="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/80 max-h-[85vh] overflow-y-auto">
+    <div className="bg-zinc-900 rounded-2xl border border-zinc-800 max-h-[85vh] overflow-y-auto">
       <div className="p-6">
         {computation.warnings && computation.warnings.length > 0 && (
-          <div className="mb-6 bg-amber-500/10 border border-amber-500/30 text-amber-300 p-4 rounded-2xl">
+          <div className="mb-6 bg-amber-500/10 border border-amber-500/30 text-amber-300 p-4 rounded-xl">
             <div className="flex items-start">
               <WarningIcon className="w-5 h-5 mr-3 mt-1 flex-shrink-0" />
               <div>
@@ -413,14 +393,14 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
         )}
 
         <div>
-            <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-white">{computation.report.title}</h2>
+            <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-amber-400">{computation.report.title}</h2>
                  <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsModalOpen(true)}
                         aria-label="Share report"
                         title="Share report"
-                        className="flex items-center gap-2 px-4 py-2 text-sm rounded-xl font-medium transition-colors duration-200 border bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200"
+                        className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg font-medium transition-colors duration-200 border bg-zinc-800 border-zinc-700 hover:bg-zinc-700 text-zinc-200"
                     >
                         <ShareIcon className="w-4 h-4" />
                         <span>Share</span>
@@ -430,7 +410,7 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
                         disabled={isGeneratingPdf}
                         aria-label="Download PDF report"
                         title="Download PDF report"
-                        className="flex items-center gap-2 px-4 py-2 text-sm rounded-xl font-medium transition-colors duration-200 border bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200 disabled:opacity-50 disabled:cursor-wait"
+                        className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg font-medium transition-colors duration-200 border bg-zinc-800 border-zinc-700 hover:bg-zinc-700 text-zinc-200 disabled:opacity-50 disabled:cursor-wait"
                     >
                         {isGeneratingPdf ? (
                             <>
@@ -449,28 +429,29 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
                     </button>
                  </div>
             </div>
-            <p className="text-slate-300 mt-2">{computation.report.summary}</p>
+            <p className="text-zinc-300 mt-2">{computation.report.summary}</p>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div className="bg-slate-900/60 p-4 rounded-xl flex flex-col justify-center transition-transform duration-200 hover:-translate-y-1">
-                <div className="text-sm text-emerald-300">Total Calories</div>
-                <div className="text-3xl font-bold text-white flex items-baseline justify-center gap-1">
-                    {computation.totals.calories_kcal.toLocaleString()}
-                </div>
+        <div className="mt-6 bg-zinc-800/50 p-4 rounded-xl space-y-3">
+            <div className="flex justify-between items-center">
+                <span className="font-medium text-zinc-300">Total Calories</span>
+                <span className="font-bold text-lg text-amber-400">{computation.totals.calories_kcal.toLocaleString()}</span>
             </div>
-             <div className="bg-slate-900/60 p-4 rounded-xl transition-transform duration-200 hover:-translate-y-1">
-                <div className="text-sm text-emerald-300">Total Burn Time</div>
-                <div className="text-3xl font-bold text-white">{formatMinutes(computation.totals.burn_minutes)}</div>
-                <div className="text-xs text-slate-400 capitalize">{activityLabel}</div>
+            <hr className="border-zinc-700" />
+            <div className="flex justify-between items-center">
+                <span className="font-medium text-zinc-300">Total Burn Time</span>
+                <span className="font-bold text-lg text-red-500">{formatMinutes(computation.totals.burn_minutes)}</span>
             </div>
-             <div className="bg-slate-900/60 p-4 rounded-xl flex flex-col justify-center transition-transform duration-200 hover:-translate-y-1">
-                <div className="text-sm text-emerald-300">Annualized</div>
-                <div className="text-3xl font-bold text-white flex items-baseline justify-center gap-1">
-                    ~{computation.totals.annualized.pounds_equiv.toFixed(1)}
-                    <span className="text-base font-medium text-slate-400">lbs/yr</span>
-                </div>
+             <hr className="border-zinc-700" />
+            <div className="flex justify-between items-center">
+                <span className="font-medium text-zinc-300">Annualized Impact</span>
+                <span className="font-bold text-lg text-red-500">~{computation.totals.annualized.pounds_equiv.toFixed(1)} lbs/yr</span>
             </div>
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-zinc-800">
+          <h3 className="text-xl font-semibold text-white mb-4">Visual Analysis</h3>
+          <ReportCharts computation={computation} theme="dark" />
         </div>
 
         <div className="mt-8">
@@ -500,30 +481,30 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
         </div>
 
         {shouldRenderEducationalSection && (
-          <div className="mt-8 pt-6 border-t border-slate-700">
+          <div className="mt-8 pt-6 border-t border-zinc-800">
             <div className="flex items-center gap-3 mb-4">
                 <LightbulbIcon className="w-6 h-6 text-amber-400" />
                 <h3 className="text-xl font-semibold text-white">Educational Insights</h3>
             </div>
             
             {hasEducationalSummary && (
-              <div className="mb-6 bg-slate-900/60 p-4 rounded-2xl">
-                <h4 className="font-semibold text-slate-200 mb-2">Overall Takeaway</h4>
-                <p className="text-slate-300">{computation.report.education_summary}</p>
+              <div className="mb-6 bg-zinc-800/50 p-4 rounded-xl">
+                <h4 className="font-semibold text-zinc-200 mb-2">Overall Takeaway</h4>
+                <p className="text-zinc-300">{computation.report.education_summary}</p>
               </div>
             )}
 
             {hasEducationalItems && (
                 <div className="space-y-4">
                 {educationalItems.map((item, index) => (
-                    <div key={index} className="bg-slate-900/60 p-4 rounded-2xl">
-                    <h4 className="font-semibold text-slate-200">{item.name}</h4>
-                    <div className="mt-2 text-sm space-y-2 text-slate-300">
+                    <div key={index} className="bg-zinc-800/50 p-4 rounded-xl">
+                    <h4 className="font-semibold text-zinc-200">{item.name}</h4>
+                    <div className="mt-2 text-sm space-y-2 text-zinc-300">
                         {item.education.satiety_flag && (
-                            <p><span className="font-semibold text-slate-400 mr-2">Satiety:</span> {item.education.satiety_flag}</p>
+                            <p><span className="font-semibold text-zinc-400 mr-2">Satiety:</span> {item.education.satiety_flag}</p>
                         )}
                         {item.education.suggested_swap && (
-                            <p><span className="font-semibold text-slate-400 mr-2">Healthier Swap:</span> {item.education.suggested_swap}</p>
+                            <p><span className="font-semibold text-zinc-400 mr-2">Healthier Swap:</span> {item.education.suggested_swap}</p>
                         )}
                     </div>
                     </div>
@@ -533,12 +514,12 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
           </div>
         )}
         
-        <div className="mt-8 pt-6 border-t border-slate-700">
+        <div className="mt-8 pt-6 border-t border-zinc-800">
             <div className="flex items-center gap-3 mb-4">
-                <DocumentTextIcon className="w-6 h-6 text-emerald-300" />
+                <DocumentTextIcon className="w-6 h-6 text-amber-400" />
                 <h3 className="text-xl font-semibold text-white">Detailed Analysis</h3>
             </div>
-            <div className="bg-slate-900/60 p-4 rounded-2xl">
+            <div className="bg-zinc-800/50 p-4 rounded-xl">
               <SimpleMarkdown content={computation.report.details_markdown} />
             </div>
         </div>

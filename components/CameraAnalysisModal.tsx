@@ -113,14 +113,14 @@ const CameraAnalysisModal: React.FC<CameraAnalysisModalProps> = ({ isOpen, onClo
       role="dialog"
     >
       <div
-        className="w-full max-w-lg bg-slate-800/80 backdrop-blur-xl rounded-3xl border border-slate-700 flex flex-col max-h-[90vh] overflow-hidden"
+        className="w-full max-w-lg bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="p-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0">
+        <header className="p-4 border-b border-zinc-800 flex justify-between items-center flex-shrink-0">
           <h2 className="text-xl font-bold text-white">Analyze Food with AI</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-all transform hover:scale-110"
+            className="text-zinc-400 hover:text-white transition-all transform hover:scale-110"
             aria-label="Close modal"
           >
             <XIcon className="w-6 h-6" />
@@ -142,22 +142,22 @@ const CameraAnalysisModal: React.FC<CameraAnalysisModalProps> = ({ isOpen, onClo
           )}
           {isLoading && (
               <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white">
-                <SparklesIcon className="w-12 h-12 text-sky-400 animate-pulse" />
+                <SparklesIcon className="w-12 h-12 text-amber-400 animate-pulse" />
                 <p className="mt-4 text-lg font-semibold">Analyzing image...</p>
-                <p className="text-sm text-slate-300">This may take a moment.</p>
+                <p className="text-sm text-zinc-300">This may take a moment.</p>
               </div>
           )}
           <canvas ref={canvasRef} className="hidden" />
         </div>
 
-        <footer className="p-4 border-t border-slate-700 flex-shrink-0">
-            {error && <div className="text-center text-red-300 bg-red-500/20 p-2 rounded-lg mb-4">{error}</div>}
+        <footer className="p-4 border-t border-zinc-800 flex-shrink-0">
+            {error && <div className="text-center text-red-400 bg-red-500/20 p-2 rounded-lg mb-4">{error}</div>}
             <div className="flex items-center justify-center gap-4">
                 {!capturedImage ? (
                     <button
                         onClick={handleCapture}
                         disabled={!stream || isLoading}
-                        className="w-16 h-16 rounded-full bg-white flex items-center justify-center border-4 border-slate-500 disabled:opacity-50 transition-transform transform hover:scale-105"
+                        className="w-16 h-16 rounded-full bg-white flex items-center justify-center border-4 border-zinc-600 disabled:opacity-50 transition-transform transform hover:scale-105"
                         aria-label="Capture photo"
                     >
                         <div className="w-12 h-12 rounded-full bg-white ring-2 ring-inset ring-black"></div>
@@ -167,14 +167,14 @@ const CameraAnalysisModal: React.FC<CameraAnalysisModalProps> = ({ isOpen, onClo
                         <button
                             onClick={handleRetake}
                             disabled={isLoading}
-                            className="flex-1 py-3 px-4 bg-slate-700 text-white font-semibold rounded-xl hover:bg-slate-600 transition-colors disabled:opacity-50"
+                            className="flex-1 py-3 px-4 bg-zinc-700 text-white font-semibold rounded-xl hover:bg-zinc-600 transition-colors disabled:opacity-50"
                         >
                             Retake
                         </button>
                         <button
                             onClick={handleAnalyze}
                             disabled={isLoading}
-                            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-bold rounded-xl hover:scale-105 transition-transform disabled:opacity-50"
+                            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-amber-400 text-zinc-900 font-bold rounded-xl hover:scale-105 transition-transform disabled:opacity-50"
                         >
                             <SparklesIcon />
                             Analyze

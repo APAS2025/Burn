@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SparklesIcon } from './Icons';
+import { ChartLineIcon } from './Icons';
 
 const loadingMessages = [
   "Running the numbers...",
@@ -25,16 +25,16 @@ const LoadingAnalysis: React.FC = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm p-8 text-center animate-[fadeIn_0.5s_ease-out]">
-      <SparklesIcon className="w-48 h-48 text-emerald-400 animate-pulse" />
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-8 text-center animate-[fadeIn_0.5s_ease-out]">
+      <ChartLineIcon className="w-48 h-48 text-amber-400 animate-pulse" />
       
-      <p key={currentMessageIndex} className="text-slate-200 text-xl font-semibold mt-8 h-8 animate-[fadeIn_0.5s]">
+      <p key={currentMessageIndex} className="text-zinc-200 text-xl font-semibold mt-8 h-8 animate-[fadeIn_0.5s]">
         {loadingMessages[currentMessageIndex]}
       </p>
 
-      <div className="w-full max-w-xs bg-slate-700/50 rounded-full h-2.5 mt-6 overflow-hidden">
+      <div className="w-full max-w-xs bg-zinc-800 rounded-full h-2.5 mt-6 overflow-hidden">
         <div 
-          className="bg-gradient-to-r from-amber-400 via-red-500 to-yellow-500 h-2.5 w-1/2 animate-[loadingBar_2s_linear_infinite]"
+          className="bg-amber-400 h-2.5 w-1/2 animate-[loadingBar_2s_linear_infinite]"
         ></div>
       </div>
     </div>

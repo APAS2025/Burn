@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ComputationItem } from '../types';
 import { ScaleIcon, XIcon } from './Icons';
@@ -31,21 +30,21 @@ const ComparisonRow: React.FC<{
     let class2 = 'text-white';
 
     if (value1 < value2) {
-        class1 = lowerIsBetter ? 'text-emerald-400' : 'text-rose-400';
-        class2 = lowerIsBetter ? 'text-rose-400' : 'text-emerald-400';
+        class1 = lowerIsBetter ? 'text-amber-400' : 'text-red-500';
+        class2 = lowerIsBetter ? 'text-red-500' : 'text-amber-400';
     } else if (value2 < value1) {
-        class2 = lowerIsBetter ? 'text-emerald-400' : 'text-rose-400';
-        class1 = lowerIsBetter ? 'text-rose-400' : 'text-emerald-400';
+        class2 = lowerIsBetter ? 'text-amber-400' : 'text-red-500';
+        class1 = lowerIsBetter ? 'text-red-500' : 'text-amber-400';
     }
 
     return (
-        <div className="grid grid-cols-3 items-center text-center py-3 border-b border-slate-700 last:border-b-0">
+        <div className="grid grid-cols-3 items-center text-center py-3 border-b border-zinc-800 last:border-b-0">
             <div className={`font-semibold text-lg ${class1}`}>
-                {formatter(value1)} <span className="text-sm text-slate-400">{unit}</span>
+                {formatter(value1)} <span className="text-sm text-zinc-400">{unit}</span>
             </div>
-            <div className="text-sm text-slate-300 font-medium">{label}</div>
+            <div className="text-sm text-zinc-300 font-medium">{label}</div>
             <div className={`font-semibold text-lg ${class2}`}>
-                 {formatter(value2)} <span className="text-sm text-slate-400">{unit}</span>
+                 {formatter(value2)} <span className="text-sm text-zinc-400">{unit}</span>
             </div>
         </div>
     );
@@ -54,13 +53,13 @@ const ComparisonRow: React.FC<{
 
 const ComparisonView: React.FC<ComparisonViewProps> = ({ item1, item2, onClear, activityLabel }) => {
   return (
-    <div className="bg-slate-800/40 backdrop-blur-xl p-6 rounded-2xl border border-emerald-500/30 mb-8">
+    <div className="bg-zinc-900 p-6 rounded-xl border border-amber-500/30 mb-8">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <ScaleIcon className="w-6 h-6 text-emerald-300" />
+          <ScaleIcon className="w-6 h-6 text-amber-400" />
           <h3 className="text-xl font-semibold text-white">Side-by-Side Comparison</h3>
         </div>
-        <button onClick={onClear} className="text-slate-400 hover:text-white transition-all transform hover:scale-110" aria-label="Clear comparison">
+        <button onClick={onClear} className="text-zinc-400 hover:text-white transition-all transform hover:scale-110" aria-label="Clear comparison">
           <XIcon className="w-6 h-6" />
         </button>
       </div>
@@ -68,16 +67,16 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ item1, item2, onClear, 
       <div className="mt-4 grid grid-cols-3 gap-4 text-center items-end">
         <div className="text-left">
             <h4 className="font-bold text-white truncate">{item1.name}</h4>
-            <p className="text-xs text-slate-400">{item1.serving_label}</p>
+            <p className="text-xs text-zinc-400">{item1.serving_label}</p>
         </div>
         <div/>
         <div className="text-right">
             <h4 className="font-bold text-white truncate">{item2.name}</h4>
-            <p className="text-xs text-slate-400">{item2.serving_label}</p>
+            <p className="text-xs text-zinc-400">{item2.serving_label}</p>
         </div>
       </div>
 
-      <div className="mt-2 bg-slate-900/60 rounded-xl">
+      <div className="mt-2 bg-zinc-800/50 rounded-xl">
         <ComparisonRow 
             label="Calories" 
             value1={item1.calories_kcal} 

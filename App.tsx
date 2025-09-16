@@ -9,9 +9,8 @@ import OptionsCard from './components/OptionsCard';
 import ResultsDisplay from './components/ResultsDisplay';
 import FoodDatabaseModal from './components/FoodDatabaseModal';
 import CameraAnalysisModal from './components/CameraAnalysisModal';
-import { PlusIcon, SparklesIcon, DatabaseIcon, CameraIcon } from './components/Icons';
+import { PlusIcon, SparklesIcon, DatabaseIcon, CameraIcon, ChartLineIcon } from './components/Icons';
 import LoadingAnalysis from './components/LoadingAnalysis';
-import ThemeToggle from './components/ThemeToggle';
 import EnzarkLogo from './components/EnzarkLogo';
 
 
@@ -86,15 +85,12 @@ const App: React.FC = () => {
     <div className="min-h-screen font-sans">
       <main className="container mx-auto px-4 py-8 md:py-12">
         <header className="text-center mb-12 relative">
-          <div className="absolute top-0 right-0">
-            <ThemeToggle />
-          </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-red-500 to-yellow-500 pt-12 md:pt-16">
-            <span className="block">Eat in Minutes.</span>
-            <span className="block">Burn in Hours.</span>
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight pt-12 md:pt-16">
+            <span className="block text-amber-400">The Hidden Equation</span>
+            <span className="block text-white">You Can't Ignore.</span>
           </h1>
-          <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            Gamify your diet. Discover the surprising amount of exercise needed to burn off your favorite foods.
+          <p className="mt-4 text-lg text-zinc-400 max-w-2xl mx-auto">
+            Discover the surprising amount of exercise needed to burn off your favorite foods.
           </p>
         </header>
 
@@ -109,21 +105,21 @@ const App: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button
                 onClick={addFood}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-800/40 border border-slate-700/80 rounded-2xl hover:bg-slate-700/50 transition-all duration-300 text-emerald-400 font-semibold transform hover:scale-[1.02]"
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
               >
                 <PlusIcon />
                 Manual
               </button>
               <button
                 onClick={() => setIsDbModalOpen(true)}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-800/40 border border-slate-700/80 rounded-2xl hover:bg-slate-700/50 transition-all duration-300 text-emerald-400 font-semibold transform hover:scale-[1.02]"
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
               >
                 <DatabaseIcon />
                 Database
               </button>
               <button
                 onClick={() => setIsCameraModalOpen(true)}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-800/40 border border-slate-700/80 rounded-2xl hover:bg-slate-700/50 transition-all duration-300 text-sky-400 font-semibold transform hover:scale-[1.02]"
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
               >
                 <CameraIcon />
                 With AI
@@ -143,11 +139,11 @@ const App: React.FC = () => {
              <button
               onClick={handleCalculate}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 transition-all duration-300"
+              className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-zinc-800 border-2 border-amber-400 text-amber-400 font-bold text-lg rounded-xl shadow-lg shadow-amber-500/10 hover:bg-amber-400 hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:bg-zinc-800 disabled:text-amber-400/50 disabled:border-amber-400/50 transition-all duration-300 group"
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -155,7 +151,7 @@ const App: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <SparklesIcon />
+                  <ChartLineIcon className="w-6 h-6 text-amber-400 group-hover:text-zinc-900 transition-colors duration-300" />
                   Calculate Reality Check
                 </>
               )}
@@ -165,19 +161,19 @@ const App: React.FC = () => {
           {/* Output Column */}
           <div className="relative">
             <div className="sticky top-8">
-              {error && <div className="bg-red-500/20 border border-red-500 text-red-300 p-4 rounded-2xl mb-4 animate-pulse">{error}</div>}
+              {error && <div className="bg-red-500/20 border border-red-500/50 text-red-400 p-4 rounded-xl mb-4 animate-pulse">{error}</div>}
               {isLoading ? (
                  <LoadingAnalysis />
               ) : computation ? (
                 <ResultsDisplay computation={computation} />
               ) : (
-                <div className="w-full min-h-[500px] h-full bg-slate-800/40 backdrop-blur-xl rounded-3xl flex flex-col items-center justify-center border border-slate-700 p-8 text-center">
+                <div className="w-full min-h-[500px] h-full bg-zinc-900 rounded-2xl flex flex-col items-center justify-center border border-zinc-800 p-8 text-center">
                   <div className="relative mb-6">
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full blur-xl opacity-30"></div>
-                    <SparklesIcon className="relative w-16 h-16 text-emerald-300" />
+                    <div className="absolute -inset-2 bg-amber-400 rounded-full blur-xl opacity-20"></div>
+                    <ChartLineIcon className="relative w-16 h-16 text-amber-400" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white">Your Calorie Reality Check Awaits</h3>
-                  <p className="text-slate-300 mt-2 max-w-sm">Fill in your food items, personalize the settings, and hit the calculate button to see your results here.</p>
+                  <h3 className="text-2xl font-bold text-white">Your Metrics Await</h3>
+                  <p className="text-zinc-400 mt-2 max-w-sm">Enter your food items, adjust the settings, and click "Calculate" to see the hidden equation.</p>
                 </div>
               )}
             </div>

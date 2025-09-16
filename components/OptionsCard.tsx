@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Options } from '../types';
 
@@ -9,10 +8,10 @@ interface OptionsCardProps {
 
 const Toggle: React.FC<{ checked: boolean; onChange: (checked: boolean) => void; label: string; }> = ({ checked, onChange, label }) => (
   <label className="flex items-center justify-between cursor-pointer">
-    <span className="text-slate-200">{label}</span>
+    <span className="text-zinc-200">{label}</span>
     <div className="relative">
       <input type="checkbox" className="sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <div className={`block w-14 h-8 rounded-full transition-colors ${checked ? 'bg-gradient-to-r from-emerald-500 to-teal-600' : 'bg-slate-600'}`}></div>
+      <div className={`block w-14 h-8 rounded-full transition-colors ${checked ? 'bg-amber-400' : 'bg-zinc-700'}`}></div>
       <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${checked ? 'translate-x-6' : ''}`}></div>
     </div>
   </label>
@@ -20,7 +19,7 @@ const Toggle: React.FC<{ checked: boolean; onChange: (checked: boolean) => void;
 
 const OptionsCard: React.FC<OptionsCardProps> = ({ options, onOptionChange }) => {
   return (
-    <div className="bg-slate-800/40 backdrop-blur-xl p-6 rounded-2xl border border-slate-700/80">
+    <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 border-t-amber-500/20">
       <h3 className="text-xl font-bold text-white mb-4">Analysis Options</h3>
       <div className="space-y-6">
         <div>
@@ -31,8 +30,8 @@ const OptionsCard: React.FC<OptionsCardProps> = ({ options, onOptionChange }) =>
           />
           {options.include_shock_factor && (
             <div className="pl-2 mt-4">
-              <label htmlFor="servings_multiplier" className="block text-sm font-medium text-slate-300 mb-2">
-                Servings Multiplier: <span className="font-bold text-emerald-300">{options.servings_multiplier}x</span>
+              <label htmlFor="servings_multiplier" className="block text-sm font-medium text-zinc-400 mb-2">
+                Servings Multiplier: <span className="font-bold text-amber-400">{options.servings_multiplier}x</span>
               </label>
               <input
                 type="range"
@@ -43,7 +42,7 @@ const OptionsCard: React.FC<OptionsCardProps> = ({ options, onOptionChange }) =>
                 step="1"
                 value={options.servings_multiplier}
                 onChange={(e) => onOptionChange('servings_multiplier', parseInt(e.target.value, 10))}
-                className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-amber-400"
               />
             </div>
           )}

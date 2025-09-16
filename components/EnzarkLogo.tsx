@@ -3,7 +3,7 @@ import React from 'react';
 
 const EnzarkLogo: React.FC<{ className?: string }> = ({ className = "w-auto h-8" }) => {
     return (
-        <a href="https://enzark.com" target="_blank" rel="noopener noreferrer" aria-label="Enzark Home" className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors duration-300 group">
+        <a href="https://enzark.com" target="_blank" rel="noopener noreferrer" aria-label="Enzark Home" className="flex items-center gap-3 text-zinc-500 hover:text-white transition-colors duration-300 group">
             <span className="text-sm font-medium">Powered by</span>
             <div className={`flex items-center gap-2 ${className}`}>
                  <svg 
@@ -12,7 +12,7 @@ const EnzarkLogo: React.FC<{ className?: string }> = ({ className = "w-auto h-8"
                     fill="none" 
                     xmlns="http://www.w3.org/2000/svg"
                 >
-                    <circle cx="20" cy="20" r="19" stroke="currentColor" strokeWidth="2" className="text-slate-600 group-hover:text-emerald-500 transition-colors duration-300"/>
+                    <circle cx="20" cy="20" r="19" stroke="currentColor" strokeWidth="2" className="text-zinc-700 group-hover:text-amber-500 transition-colors duration-300"/>
                     <path 
                         d="M20.5 11C17.5 13.5 17.5 17.5 20.5 20C23.5 16.5 23.5 13.5 20.5 11Z" 
                         className="fill-amber-400"
@@ -26,7 +26,7 @@ const EnzarkLogo: React.FC<{ className?: string }> = ({ className = "w-auto h-8"
                         className="fill-yellow-400"
                     />
                 </svg>
-                <span className="font-bold text-lg tracking-tight text-slate-300 group-hover:text-white transition-colors duration-300">
+                <span className="font-bold text-lg tracking-tight text-zinc-400 group-hover:text-white transition-colors duration-300">
                     Enzark
                 </span>
             </div>

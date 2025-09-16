@@ -12,6 +12,7 @@ import CameraAnalysisModal from './components/CameraAnalysisModal';
 import { PlusIcon, SparklesIcon, DatabaseIcon, CameraIcon } from './components/Icons';
 import LoadingAnalysis from './components/LoadingAnalysis';
 import ThemeToggle from './components/ThemeToggle';
+import EnzarkLogo from './components/EnzarkLogo';
 
 
 const App: React.FC = () => {
@@ -183,6 +184,9 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+      <footer className="container mx-auto flex justify-center items-center py-6">
+        <EnzarkLogo />
+      </footer>
       {isDbModalOpen && (
         <FoodDatabaseModal 
           isOpen={isDbModalOpen}

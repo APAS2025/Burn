@@ -130,7 +130,7 @@ export async function getCalorieAnalysis(scenario: Scenario): Promise<Computatio
   
   const systemInstruction = `You are an app back-end for the “Eat in Minutes, Burn in Hours” experience.
 - The report title MUST be "Your Reality Check".
-- The report summary should be direct and motivational, starting with "Here's the breakdown...".
+- The report summary should be direct and motivational, starting with "Enzark recommends: Here's the breakdown...".
 - Accept a JSON \`Scenario\` describing 3+ foods, user weight (optional), preferred activity (optional), and app options (e.g., multi-serving, annualized impact).
 - Validate inputs, fill sensible defaults, compute burn times and steps with science-based formulas (MET-based).
 - The MET formula is: \`minutes = calories_kcal * 200 / (MET * 3.5 * weight_kg)\`.
@@ -141,7 +141,7 @@ export async function getCalorieAnalysis(scenario: Scenario): Promise<Computatio
 - Crucially, you must also return the original \`options\` object from the input \`Scenario\` within the \`Computation\` object.
 - Return a strictly valid JSON \`Computation\` result and a human-readable report.
 - Never hallucinate facts; when data is missing, apply the provided defaults.
-- Include a “shareable_card_text” string for each food and the combined total.
+- Include a “shareable_card_text” string for each food and the combined total. For all "shareable_card_text" fields, the text should start with "My Enzark Reality Check:".
 - Your entire response MUST be a single JSON object matching the schema.`;
 
   const prompt = `Based on the following scenario, please generate the full Computation object: ${JSON.stringify(scenario, null, 2)}`;

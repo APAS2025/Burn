@@ -1,8 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { Computation, ComputationItem } from '../types';
-import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, ShareIcon, FlameIcon, CutleryIcon, CameraIcon, PlusCircleIcon, CheckCircleIcon } from './Icons';
+import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, ShareIcon, FlameIcon, CutleryIcon, CameraIcon, PlusCircleIcon, CheckCircleIcon, DownloadIcon } from './Icons';
 import ComparisonView from './ComparisonView';
+import EnzarkLogo from './EnzarkLogo';
+
+
+// Declarations for CDN libraries
+declare const html2canvas: any;
+declare const jspdf: any;
 
 // A simple markdown renderer component
 const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
@@ -117,7 +122,7 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
             <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
                 <div className="aspect-[9/10] bg-slate-900 rounded-3xl border border-emerald-500/30 p-6 flex flex-col text-white shadow-2xl shadow-emerald-500/10" style={{ backgroundImage: 'linear-gradient(to bottom right, #0f172a, #1e293b)' }}>
                     <div className="text-center">
-                        <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">Calorie Reality Check</h2>
+                        <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">Enzark Reality Check</h2>
                     </div>
                     
                     <div className="flex-1 flex flex-col justify-center items-center my-4">
@@ -156,7 +161,7 @@ const ShareCardModal: React.FC<{ computation: Computation; onClose: () => void; 
                     </div>
 
                     <div className="mt-auto text-center text-xs text-slate-600 font-semibold tracking-wider pt-2">
-                        EAT IN MINUTES, BURN IN HOURS
+                        POWERED BY ENZARK
                     </div>
                 </div>
                 <div className="mt-6 flex flex-col items-center gap-4">
@@ -249,10 +254,71 @@ const ResultItemCard: React.FC<{
     );
 }
 
+const PDFReport: React.FC<{ computation: Computation }> = ({ computation }) => {
+    return (
+        <div id="pdf-report" className="p-10 bg-white text-slate-800 font-sans" style={{ width: '210mm', minHeight: '297mm', fontFamily: "'Poppins', sans-serif" }}>
+            <header className="flex justify-between items-center pb-4 border-b border-slate-200">
+                <EnzarkLogo className="h-10"/>
+                <h1 className="text-2xl font-bold text-slate-700">Calorie Reality Check</h1>
+            </header>
+
+            <section className="my-8">
+                <h2 className="text-3xl font-extrabold text-slate-900">{computation.report.title}</h2>
+                <p className="mt-2 text-slate-600 text-lg">{computation.report.summary}</p>
+            </section>
+
+            <section className="grid grid-cols-3 gap-6 text-center my-10">
+                <div className="bg-slate-100 p-4 rounded-lg">
+                    <div className="text-sm text-slate-500">Total Calories</div>
+                    <div className="text-4xl font-bold text-emerald-600">{computation.totals.calories_kcal.toLocaleString()}</div>
+                </div>
+                <div className="bg-slate-100 p-4 rounded-lg">
+                    <div className="text-sm text-slate-500">Total Burn Time</div>
+                    <div className="text-4xl font-bold text-emerald-600">{formatMinutes(computation.totals.burn_minutes)}</div>
+                </div>
+                <div className="bg-slate-100 p-4 rounded-lg">
+                    <div className="text-sm text-slate-500">Annualized</div>
+                    <div className="text-4xl font-bold text-emerald-600">~{computation.totals.annualized.pounds_equiv.toFixed(1)} <span className="text-2xl">lbs/yr</span></div>
+                </div>
+            </section>
+
+            <section>
+                <h3 className="text-2xl font-bold text-slate-800 mb-4">Itemized Breakdown</h3>
+                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                    <div className="grid grid-cols-5 bg-slate-50 font-semibold text-slate-600 text-left">
+                        <div className="p-3 col-span-2">Food Item</div>
+                        <div className="p-3 text-center">Calories</div>
+                        <div className="p-3 text-center">Eat Time</div>
+                        <div className="p-3 text-center">Burn Time</div>
+                    </div>
+                    <div className="divide-y divide-slate-200">
+                        {computation.items.map((item, index) => (
+                            <div key={index} className="grid grid-cols-5 text-left items-center">
+                                <div className="p-3 col-span-2">
+                                    <p className="font-semibold text-slate-800">{item.name}</p>
+                                    <p className="text-xs text-slate-500">{item.serving_label}</p>
+                                </div>
+                                <div className="p-3 text-center font-medium text-slate-700">{item.calories_kcal.toLocaleString()} kcal</div>
+                                <div className="p-3 text-center font-medium text-slate-700">{formatMinutes(item.eat_minutes)}</div>
+                                <div className="p-3 text-center font-bold text-emerald-600">{formatMinutes(item.burn_minutes)}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            <footer className="text-center text-xs text-slate-500 mt-10 pt-4 border-t border-slate-200">
+                Report generated on {new Date().toLocaleDateString()}. For informational purposes only. Consult a professional for health advice. Powered by Enzark.
+            </footer>
+        </div>
+    );
+};
+
 
 const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [comparisonSelection, setComparisonSelection] = useState<number[]>([]);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const activityLabel = computation.meta.activity_profile.activity_key.split('_')[0];
   
   const educationalItems = computation.items.filter(item => item.education?.satiety_flag || item.education?.suggested_swap);
@@ -271,6 +337,48 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
       window.removeEventListener('keydown', handleEsc);
     };
   }, []);
+  
+  useEffect(() => {
+    if (!isGeneratingPdf) return;
+
+    const pdfElement = document.getElementById('pdf-report');
+    if (!pdfElement) {
+        setTimeout(() => setIsGeneratingPdf(false), 100);
+        return;
+    }
+    
+    if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
+        console.error("PDF generation libraries not found.");
+        alert("Sorry, there was an error loading the PDF generation library. Please try again later.");
+        setIsGeneratingPdf(false);
+        return;
+    }
+
+    html2canvas(pdfElement, { scale: 2, useCORS: true }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = jspdf;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const ratio = canvasWidth / canvasHeight;
+      const pdfHeight = pdfWidth / ratio;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save('Enzark-Reality-Check.pdf');
+      setIsGeneratingPdf(false);
+    }).catch(err => {
+        console.error("Error generating PDF:", err);
+        alert("Sorry, an error occurred while generating the PDF.");
+        setIsGeneratingPdf(false);
+    });
+
+  }, [isGeneratingPdf]);
 
   const handleComparisonSelect = (selectedIndex: number) => {
     setComparisonSelection(prev => {
@@ -307,15 +415,39 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
         <div>
             <div className="flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-white">{computation.report.title}</h2>
-                 <button
-                    onClick={() => setIsModalOpen(true)}
-                    aria-label="Share report"
-                    title="Share report"
-                    className="flex items-center gap-2 px-4 py-2 text-sm rounded-xl font-medium transition-colors duration-200 border bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200"
-                >
-                    <ShareIcon className="w-4 h-4" />
-                    <span>Share</span>
-                </button>
+                 <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        aria-label="Share report"
+                        title="Share report"
+                        className="flex items-center gap-2 px-4 py-2 text-sm rounded-xl font-medium transition-colors duration-200 border bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200"
+                    >
+                        <ShareIcon className="w-4 h-4" />
+                        <span>Share</span>
+                    </button>
+                    <button
+                        onClick={() => setIsGeneratingPdf(true)}
+                        disabled={isGeneratingPdf}
+                        aria-label="Download PDF report"
+                        title="Download PDF report"
+                        className="flex items-center gap-2 px-4 py-2 text-sm rounded-xl font-medium transition-colors duration-200 border bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-200 disabled:opacity-50 disabled:cursor-wait"
+                    >
+                        {isGeneratingPdf ? (
+                            <>
+                               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Generating...</span>
+                            </>
+                        ) : (
+                            <>
+                                <DownloadIcon className="w-4 h-4" />
+                                <span>PDF</span>
+                            </>
+                        )}
+                    </button>
+                 </div>
             </div>
             <p className="text-slate-300 mt-2">{computation.report.summary}</p>
         </div>
@@ -414,6 +546,11 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
       </div>
     </div>
     {isModalOpen && <ShareCardModal computation={computation} onClose={() => setIsModalOpen(false)} />}
+    {isGeneratingPdf && (
+        <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -10 }}>
+            <PDFReport computation={computation} />
+        </div>
+    )}
     </>
   );
 };

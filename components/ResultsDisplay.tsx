@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Computation, ComputationItem, FoodItem } from '../types';
 import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, ShareIcon, FlameIcon, CutleryIcon, CameraIcon, PlusCircleIcon, CheckCircleIcon, DownloadIcon, LinkIcon } from './Icons';
@@ -256,64 +257,86 @@ const ResultItemCard: React.FC<{
 
 const PDFReport: React.FC<{ computation: Computation }> = ({ computation }) => {
     return (
-        <div id="pdf-report" className="p-10 bg-white text-slate-800 font-sans" style={{ width: '210mm', minHeight: '297mm', fontFamily: "'Poppins', sans-serif" }}>
-            <header className="flex justify-between items-center pb-4 border-b border-slate-200">
-                <EnzarkLogo className="h-10"/>
-                <h1 className="text-2xl font-bold text-slate-700">Calorie Reality Check</h1>
+        <div id="pdf-report" className="p-12 bg-slate-50 text-slate-800" style={{ width: '800px', fontFamily: "'Poppins', sans-serif", minHeight: '1120px' }}>
+            {/* Header */}
+            <header className="flex justify-between items-center pb-6 border-b-2 border-amber-400">
+                <div>
+                    <h1 className="text-4xl font-extrabold text-slate-800">{computation.report.title}</h1>
+                    <p className="text-slate-500 mt-1">A personalized analysis by Enzark</p>
+                </div>
+                <EnzarkLogo className="h-12"/>
             </header>
 
-            <section className="my-8">
-                <h2 className="text-3xl font-extrabold text-amber-500">{computation.report.title}</h2>
-                <p className="mt-2 text-slate-600 text-lg">{computation.report.summary}</p>
+            {/* Summary */}
+            <section className="my-10">
+                <p className="text-lg text-slate-600 leading-relaxed">{computation.report.summary}</p>
             </section>
 
-            <section className="grid grid-cols-3 gap-6 text-center my-10">
-                <div className="bg-slate-100 p-4 rounded-lg">
-                    <div className="text-sm text-slate-500">Total Calories</div>
-                    <div className="text-4xl font-bold text-amber-500">{computation.totals.calories_kcal.toLocaleString()}</div>
+            {/* Key Metrics */}
+            <section className="grid grid-cols-3 gap-8 my-10">
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center flex flex-col justify-between">
+                    <div>
+                        <div className="text-slate-500 text-sm font-medium">Total Calories</div>
+                        <div className="text-5xl font-bold text-amber-500 mt-2">{computation.totals.calories_kcal.toLocaleString()}</div>
+                    </div>
+                    <div className="text-slate-500 text-sm font-medium mt-1">kcal</div>
                 </div>
-                <div className="bg-slate-100 p-4 rounded-lg">
-                    <div className="text-sm text-slate-500">Total Burn Time</div>
-                    <div className="text-4xl font-bold text-red-600">{formatMinutes(computation.totals.burn_minutes)}</div>
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center flex flex-col justify-between">
+                    <div>
+                        <div className="text-slate-500 text-sm font-medium">Total Burn Time</div>
+                        <div className="text-5xl font-bold text-red-500 mt-2">{formatMinutes(computation.totals.burn_minutes)}</div>
+                    </div>
+                    <div className="text-slate-500 text-sm font-medium mt-1">to burn</div>
                 </div>
-                <div className="bg-slate-100 p-4 rounded-lg">
-                    <div className="text-sm text-slate-500">Annualized</div>
-                    <div className="text-4xl font-bold text-red-600">~{computation.totals.annualized.pounds_equiv.toFixed(1)} <span className="text-2xl">lbs/yr</span></div>
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center flex flex-col justify-between">
+                    <div>
+                        <div className="text-slate-500 text-sm font-medium">Annualized</div>
+                        <div className="text-5xl font-bold text-red-500 mt-2">~{computation.totals.annualized.pounds_equiv.toFixed(1)}</div>
+                    </div>
+                    <div className="text-slate-500 text-sm font-medium mt-1">lbs/year</div>
                 </div>
             </section>
-            
-            <section className="my-8">
-                <h3 className="text-2xl font-bold text-slate-800 mb-4">Visual Analysis</h3>
+
+            {/* Visual Analysis */}
+            <section className="my-12 p-8 bg-white rounded-2xl shadow-lg border border-slate-200">
+                <h2 className="text-2xl font-bold text-slate-800 mb-6 text-center">Visual Analysis</h2>
                 <ReportCharts computation={computation} theme="light" />
             </section>
 
-            <section>
-                <h3 className="text-2xl font-bold text-slate-800 mb-4">Itemized Breakdown</h3>
-                <div className="border border-slate-200 rounded-lg overflow-hidden">
-                    <div className="grid grid-cols-5 bg-slate-50 font-semibold text-slate-600 text-left">
-                        <div className="p-3 col-span-2">Food Item</div>
-                        <div className="p-3 text-center">Calories</div>
-                        <div className="p-3 text-center">Eat Time</div>
-                        <div className="p-3 text-center">Burn Time</div>
-                    </div>
-                    <div className="divide-y divide-slate-200">
-                        {computation.items.map((item, index) => (
-                            <div key={index} className="grid grid-cols-5 text-left items-center">
-                                <div className="p-3 col-span-2">
-                                    <p className="font-semibold text-slate-800">{item.name}</p>
-                                    <p className="text-xs text-slate-500">{item.serving_label}</p>
-                                </div>
-                                <div className="p-3 text-center font-medium text-slate-700">{item.calories_kcal.toLocaleString()} kcal</div>
-                                <div className="p-3 text-center font-medium text-slate-700">{formatMinutes(item.eat_minutes)}</div>
-                                <div className="p-3 text-center font-bold text-red-600">{formatMinutes(item.burn_minutes)}</div>
-                            </div>
-                        ))}
-                    </div>
+            {/* Itemized Breakdown */}
+            <section className="my-12">
+                <h2 className="text-2xl font-bold text-slate-800 mb-6">Itemized Breakdown</h2>
+                 <div className="overflow-hidden shadow-lg border border-slate-200 rounded-2xl">
+                    <table className="min-w-full divide-y divide-slate-200">
+                        <thead className="bg-slate-100">
+                            <tr>
+                                <th scope="col" className="py-4 pl-6 pr-3 text-left text-sm font-semibold text-slate-900">Food Item</th>
+                                <th scope="col" className="px-3 py-4 text-center text-sm font-semibold text-slate-900">Calories</th>
+                                <th scope="col" className="px-3 py-4 text-center text-sm font-semibold text-slate-900">Eat Time</th>
+                                <th scope="col" className="px-3 py-4 text-center text-sm font-semibold text-slate-900">Burn Time</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 bg-white">
+                            {computation.items.map((item, index) => (
+                                <tr key={index}>
+                                    <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm">
+                                        <div className="font-medium text-slate-900">{item.name}</div>
+                                        <div className="text-slate-500">{item.serving_label}</div>
+                                    </td>
+                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-600 text-center font-medium">{item.calories_kcal.toLocaleString()} kcal</td>
+                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-600 text-center">{formatMinutes(item.eat_minutes)}</td>
+                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-red-500 text-center font-bold">{formatMinutes(item.burn_minutes)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
-            <footer className="text-center text-xs text-slate-500 mt-10 pt-4 border-t border-slate-200">
-                Report generated on {new Date().toLocaleDateString()}. For informational purposes only. Consult a professional for health advice. Powered by Enzark.
+            {/* Footer */}
+            <footer className="text-center text-xs text-slate-500 mt-16 pt-6 border-t border-slate-300">
+                <p>Report generated on {new Date().toLocaleDateString()}. For informational purposes only. Consult a professional for health advice.</p>
+                <p className="mt-1 font-semibold">Powered by Enzark</p>
             </footer>
         </div>
     );
@@ -439,7 +462,7 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
                     >
                         {isGeneratingPdf ? (
                             <>
-                               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>

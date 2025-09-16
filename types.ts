@@ -1,6 +1,7 @@
 
 
 
+
 export interface User {
   name: string | null;
   weight_kg: number | null;
@@ -171,6 +172,9 @@ export interface GamificationProfile {
     totalCaloriesSaved: number;
     totalAiAnalyses: number;
   };
+  claimedRewards?: {
+    [rewardId: string]: boolean;
+  };
 }
 
 export interface LeaderboardEntry {
@@ -183,4 +187,14 @@ export interface LeaderboardEntry {
 export interface ChallengeMode {
   challengerName: string | null;
   targetCalories: number;
+}
+
+export interface Reward {
+  id: string;
+  partnerName: string;
+  partnerLogo: React.FC<{ className?: string }>;
+  title: string;
+  description: string;
+  pointsRequired: number;
+  rewardValue: string; // e.g., discount code
 }

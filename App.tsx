@@ -17,6 +17,7 @@ import SubscriptionCard from './components/SubscriptionCard';
 import ImageGalleryModal from './components/ImageGalleryModal';
 import GamificationDashboard from './components/GamificationDashboard';
 import ChallengeBanner from './components/ChallengeBanner';
+import RewardsModal from './components/RewardsModal';
 import * as storageService from './services/storageService';
 
 
@@ -33,6 +34,7 @@ const App: React.FC = () => {
   const [isDbModalOpen, setIsDbModalOpen] = useState<boolean>(false);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState<boolean>(false);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState<boolean>(false);
+  const [isRewardsModalOpen, setIsRewardsModalOpen] = useState<boolean>(false);
   const [storedImages, setStoredImages] = useState<string[]>([]);
   const [reanalyzingImage, setReanalyzingImage] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'setup' | 'results'>('setup');
@@ -49,34 +51,44 @@ const App: React.FC = () => {
             const decodedString = atob(challengeDataParam);
             const challengeData = JSON.parse(decodedString);
 
-            if (challengeData.foods && challengeData.totalCalories) {
-                const { foods, totalCalories, challengerName } = challengeData;
+            // Dynamically update meta tags for rich link previews
+            if (challengeData.og) {
+                document.title = challengeData.og.t; // Use short key 't'
                 
+                const metaTagSelectors = {
+                    'meta[property="og:title"]': challengeData.og.t,
+                    'meta[name="twitter:title"]': challengeData.og.t,
+                    'meta[property="og:description"]': challengeData.og.d, // Use 'd'
+                    'meta[name="twitter:description"]': challengeData.og.d,
+                    'meta[property="og:image"]': challengeData.og.i, // Use 'i'
+                    'meta[name="twitter:image"]': challengeData.og.i,
+                };
+
+                for (const [selector, value] of Object.entries(metaTagSelectors)) {
+                    const element = document.querySelector(selector);
+                    if (element && value) {
+                        element.setAttribute('content', value);
+                    }
+                }
+            }
+            
+            // Set up the challenge banner using compact keys
+            if (challengeData.c !== undefined && challengeData.c !== null) {
                 setChallengeMode({
-                    challengerName: challengerName || null,
-                    targetCalories: totalCalories,
+                    challengerName: challengeData.n || null, // 'n' for name
+                    targetCalories: challengeData.c,        // 'c' for calories
                 });
 
-                if (Array.isArray(foods) && foods.length > 0) {
-                    const fullFoodItems: FoodItem[] = foods.map((f: any) => ({
-                        name: f.name,
-                        serving_label: f.serving_label,
-                        calories_kcal: f.calories_kcal,
-                        eat_minutes: f.eat_minutes,
-                        servings: 1,
-                        base_calories_kcal: f.calories_kcal,
-                        base_eat_minutes: f.eat_minutes,
-                    }));
-
-                    setScenario(prevScenario => ({
-                        ...prevScenario,
-                        foods: fullFoodItems,
-                    }));
-                }
+                // Clear the default/existing foods to start the challenge fresh
+                setScenario(prevScenario => ({
+                    ...prevScenario,
+                    foods: [],
+                }));
             }
         } catch (e) {
             console.error("Failed to parse challenge data from URL", e);
         } finally {
+            // Always clean the URL
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     }
@@ -88,6 +100,11 @@ const App: React.FC = () => {
 
   const handleGamificationUpdate = useCallback((...args: Parameters<typeof storageService.updateGamificationData>) => {
     const { updatedProfile } = storageService.updateGamificationData(...args);
+    setProfile(updatedProfile);
+  }, []);
+
+  const handleClaimReward = useCallback((rewardId: string) => {
+    const { updatedProfile } = storageService.claimReward(rewardId);
     setProfile(updatedProfile);
   }, []);
 
@@ -301,7 +318,7 @@ const App: React.FC = () => {
                 History
               </button>
             </div>
-            <GamificationDashboard profile={profile} />
+            <GamificationDashboard profile={profile} onViewRewardsClick={() => setIsRewardsModalOpen(true)} />
             <UserInputCard
               user={scenario.user}
               preferences={scenario.preferences}
@@ -408,6 +425,14 @@ const App: React.FC = () => {
           defaultEatMinutes={scenario.preferences.default_eat_minutes}
           onImageAnalyzed={handleImageAnalyzed}
           initialImage={reanalyzingImage}
+        />
+      )}
+      {isRewardsModalOpen && (
+        <RewardsModal
+            isOpen={isRewardsModalOpen}
+            onClose={() => setIsRewardsModalOpen(false)}
+            userProfile={profile}
+            onClaimReward={handleClaimReward}
         />
       )}
     </div>

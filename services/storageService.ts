@@ -1,4 +1,5 @@
-import { CustomActivity, WeeklyChallengeProgress, GamificationProfile, AchievementKey, LeaderboardEntry } from "../types";
+import { CustomActivity, WeeklyChallengeProgress, GamificationProfile, AchievementKey, LeaderboardEntry, Reward } from "../types";
+import { REWARDS } from '../rewards';
 
 const IMAGE_STORAGE_KEY = 'analyzedFoodImages';
 const CUSTOM_ACTIVITIES_KEY = 'customActivities';
@@ -139,6 +140,7 @@ const getDefaultGamificationProfile = (): GamificationProfile => ({
     totalCaloriesSaved: 0,
     totalAiAnalyses: 0,
   },
+  claimedRewards: {},
 });
 
 export const getGamificationProfile = (): GamificationProfile => {
@@ -192,6 +194,7 @@ export const updateGamificationData = (
       if (profile.stats.totalAnalyses === 0) {
         pointsToAdd += 100; // First analysis bonus
       }
+      pointsToAdd += 10; // Points per analysis
       profile.stats.totalAnalyses += 1;
 
       // Update Mindful Eating Streak
@@ -207,6 +210,7 @@ export const updateGamificationData = (
         }
         profile.mindfulEatingStreak.lastLogDate = todayStr;
       }
+      pointsToAdd += profile.mindfulEatingStreak.count * 5; // Streak bonus points
       break;
 
     case 'AI_ANALYSIS':
@@ -301,4 +305,38 @@ export const getLeaderboardData = (userWeeklyPoints: number): LeaderboardEntry[]
     }
 
     return rankedData;
+};
+
+
+// --- Rewards Service ---
+export const claimReward = (rewardId: string): { updatedProfile: GamificationProfile } => {
+  const profile = getGamificationProfile();
+  const rewardToClaim = REWARDS.find(r => r.id === rewardId);
+
+  if (!rewardToClaim) {
+    console.error("Reward not found");
+    return { updatedProfile: profile };
+  }
+
+  const alreadyClaimed = profile.claimedRewards && profile.claimedRewards[rewardId];
+  if (alreadyClaimed) {
+    console.error("Reward already claimed");
+    return { updatedProfile: profile };
+  }
+
+  if (profile.wellnessPoints < rewardToClaim.pointsRequired) {
+    console.error("Not enough points");
+    return { updatedProfile: profile };
+  }
+
+  // Deduct points and mark as claimed
+  profile.wellnessPoints -= rewardToClaim.pointsRequired;
+  if (!profile.claimedRewards) {
+    profile.claimedRewards = {};
+  }
+  profile.claimedRewards[rewardId] = true;
+
+  saveGamificationProfile(profile);
+
+  return { updatedProfile: profile };
 };

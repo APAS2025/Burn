@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import { Computation, User, FoodItem, SwapItem } from '../types';
 import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, DownloadIcon } from './Icons';
@@ -217,7 +213,6 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
                     <div className="flex items-center gap-2">
                         <ShareButton text={totals.shareable_card_text} />
                         <ChallengeShareButton 
-                            items={items}
                             totalCalories={totals.calories_kcal}
                             challengerName={user.name}
                         />

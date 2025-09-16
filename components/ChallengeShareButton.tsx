@@ -1,41 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { FoodItem } from '../types';
 import { ChallengeIcon, CheckIcon, XIcon } from './Icons';
 
-const generateBeatMyMealLink = (items: Pick<FoodItem, 'name' | 'serving_label' | 'calories_kcal' | 'eat_minutes'>[], totalCalories: number, challengerName: string | null): string => {
-    const challengeFoods = items.map(item => ({
-        name: item.name,
-        serving_label: item.serving_label,
-        calories_kcal: item.calories_kcal,
-        eat_minutes: item.eat_minutes,
-    }));
+const generateBeatMyMealLink = (totalCalories: number, challengerName: string | null): string => {
+    // OG Data Generation
+    const challenger = challengerName || 'A friend';
+    const ogTitle = `${challenger} sent you a challenge!`;
+    const ogDescription = `Can you create a meal with fewer than ${totalCalories.toLocaleString()} calories? Tap to accept the challenge.`;
+
+    // Use multiple lines for the image text
+    const imageText = `BEAT MY MEAL!\n${challenger} challenges you to beat\n${totalCalories.toLocaleString()} calories.`;
+    const encodedImageText = encodeURIComponent(imageText);
+
+    // Construct the dynamic image URL using an image generation service
+    const ogImage = `https://placehold.co/1200x630/18181b/facc15/png?text=${encodedImageText}&font=poppins`;
     
-    const challengeData = {
-        foods: challengeFoods,
-        totalCalories,
-        challengerName,
+    const compactData = {
+        c: totalCalories,
+        n: challengerName,
+        og: {
+            t: ogTitle,
+            d: ogDescription,
+            i: ogImage,
+        }
     };
 
-    const jsonString = JSON.stringify(challengeData);
-    const base64String = btoa(jsonString);
+    const jsonString = JSON.stringify(compactData);
+    const base64String = btoa(jsonString); // Base64 encode the JSON
     
     const url = new URL(window.location.href);
     url.search = `?beatmymeal=${encodeURIComponent(base64String)}`;
-    url.hash = '';
+    url.hash = ''; // Clear any existing hash
 
     return url.toString();
 };
 
 
 interface ChallengeShareButtonProps {
-  items: Pick<FoodItem, 'name' | 'serving_label' | 'calories_kcal' | 'eat_minutes'>[];
   totalCalories: number;
   challengerName: string | null;
 }
 
-const ChallengeShareButton: React.FC<ChallengeShareButtonProps> = ({ items, totalCalories, challengerName }) => {
+const ChallengeShareButton: React.FC<ChallengeShareButtonProps> = ({ totalCalories, challengerName }) => {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
-  const challengeLink = generateBeatMyMealLink(items, totalCalories, challengerName);
+  const challengeLink = generateBeatMyMealLink(totalCalories, challengerName);
 
   useEffect(() => {
     if (copyState === 'idle') return;

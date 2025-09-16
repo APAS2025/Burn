@@ -1,11 +1,12 @@
 import React from 'react';
 import { GamificationProfile, AchievementKey } from '../types';
 import { ACHIEVEMENTS } from '../constants';
-import { SparklesIcon, FlameIcon, StepIcon, HeartIcon, TargetIcon, RobotIcon, CalendarIcon } from './Icons';
+import { SparklesIcon, FlameIcon, StepIcon, HeartIcon, TargetIcon, RobotIcon, CalendarIcon, GiftIcon } from './Icons';
 import LeaderboardCard from './LeaderboardCard';
 
 interface GamificationDashboardProps {
   profile: GamificationProfile;
+  onViewRewardsClick: () => void;
 }
 
 const achievementIcons: Record<AchievementKey, React.FC<{ className?: string }>> = {
@@ -16,7 +17,7 @@ const achievementIcons: Record<AchievementKey, React.FC<{ className?: string }>>
   weekendWarrior: CalendarIcon,
 };
 
-const GamificationDashboard: React.FC<GamificationDashboardProps> = ({ profile }) => {
+const GamificationDashboard: React.FC<GamificationDashboardProps> = ({ profile, onViewRewardsClick }) => {
   const { wellnessPoints, mindfulEatingStreak, achievements } = profile;
 
   return (
@@ -27,7 +28,7 @@ const GamificationDashboard: React.FC<GamificationDashboardProps> = ({ profile }
         <div className="bg-zinc-800 p-4 rounded-lg text-center">
           <SparklesIcon className="w-8 h-8 mx-auto text-amber-400 mb-2" />
           <p className="text-2xl font-bold text-white">{wellnessPoints.toLocaleString()}</p>
-          <p className="text-xs text-zinc-400">Total Points</p>
+          <p className="text-xs text-zinc-400">Wellness Points</p>
         </div>
         <div className="bg-zinc-800 p-4 rounded-lg text-center">
           <FlameIcon className="w-8 h-8 mx-auto text-orange-500 mb-2" />
@@ -35,6 +36,14 @@ const GamificationDashboard: React.FC<GamificationDashboardProps> = ({ profile }
           <p className="text-xs text-zinc-400">Day Streak</p>
         </div>
       </div>
+
+      <button
+        onClick={onViewRewardsClick}
+        className="w-full flex items-center justify-center gap-2 mb-6 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
+      >
+        <GiftIcon />
+        View Partner Rewards
+      </button>
 
       <div className="mb-6">
         <h4 className="font-semibold text-zinc-300 mb-3">Achievements</h4>

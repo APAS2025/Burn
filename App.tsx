@@ -159,24 +159,25 @@ const App: React.FC = () => {
             </div>
             <UserInputCard
               user={scenario.user}
-              activity={scenario.preferences.activity}
+              preferences={scenario.preferences}
               activities={Object.entries(ACTIVITY_LIBRARY).map(([key, value]) => ({ key, label: value.label }))}
               onUserChange={(user) => setScenario({ ...scenario, user })}
-              onActivityChange={(activity) => setScenario({ ...scenario, preferences: { ...scenario.preferences, activity } })}
+              onPreferencesChange={(key, value) => setScenario(prev => ({ ...prev, preferences: { ...prev.preferences, [key]: value }}))}
             />
             <OptionsCard
               options={scenario.options}
               onOptionChange={(key, value) => setScenario({ ...scenario, options: { ...scenario.options, [key]: value } })}
             />
-            <div className="flex items-stretch gap-4">
+            <div className="flex flex-col gap-4">
                <button
                   onClick={handleReset}
                   disabled={isLoading}
-                  className="flex-shrink-0 flex items-center justify-center p-4 bg-zinc-800 border-2 border-zinc-700 text-zinc-400 rounded-xl hover:border-zinc-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-transparent border-2 border-zinc-600 rounded-xl hover:border-amber-400 hover:text-amber-400 transition-colors duration-200 text-zinc-400 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="Reset all inputs"
                   title="Reset to default values"
                 >
-                  <ResetIcon className="w-6 h-6" />
+                  <ResetIcon className="w-5 h-5" />
+                  Reset Inputs
                 </button>
                <button
                 onClick={handleCalculate}

@@ -24,7 +24,8 @@ export const DEFAULT_SCENARIO: Scenario = {
     default_eat_minutes: 5,
     activity: "walking_3_mph", 
     pace_override: null,
-    steps_per_mile: 2000
+    steps_per_mile: 2000,
+    weight_unit: 'kg'
   },
   options: {
     include_personalization: true,

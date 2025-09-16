@@ -12,6 +12,7 @@ export interface Preferences {
   activity: string;
   pace_override: number | null;
   steps_per_mile: number;
+  weight_unit: 'kg' | 'lbs';
 }
 
 export interface Options {

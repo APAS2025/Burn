@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect } from 'react';
 import { Computation, User, FoodItem, SwapItem } from '../types';
 import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, ShareIcon, DownloadIcon, LinkIcon } from './Icons';
@@ -8,6 +9,8 @@ import EnzarkLogo from './EnzarkLogo';
 import ResultItemCard from './ResultItemCard';
 import FoodDatabaseModal from './FoodDatabaseModal';
 import CameraAnalysisModal from './CameraAnalysisModal';
+import * as storageService from '../services/storageService';
+import WeeklyChallengeCard from './WeeklyChallengeCard';
 
 
 // Declarations for CDN libraries
@@ -118,6 +121,9 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user }) =>
   const [isPdfLoading, setIsPdfLoading] = useState<boolean>(false);
   const [swappedItems, setSwappedItems] = useState<(SwapItem | null)[]>([]);
   const [swapModalState, setSwapModalState] = useState<{ index: number | null; type: 'db' | 'camera' | null }>({ index: null, type: null });
+  const [challengeProgress, setChallengeProgress] = useState(0);
+  const CHALLENGE_GOAL = 750;
+
 
   const { meta, items, totals, report, options, warnings } = computation;
   const challengeLink = generateChallengeLink(items);
@@ -125,8 +131,35 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user }) =>
   useEffect(() => {
     if (computation) {
         setSwappedItems(new Array(computation.items.length).fill(null));
+        // Load initial challenge progress when results are displayed
+        const progress = storageService.getWeeklyChallengeProgress();
+        setChallengeProgress(progress.savedCalories);
     }
   }, [computation]);
+
+  // Effect to update challenge progress whenever swaps change
+  useEffect(() => {
+    // Calculate total calories saved from current swaps
+    const totalSaved = swappedItems.reduce((acc, currentSwap, index) => {
+        if (currentSwap) {
+            const originalItem = items[index];
+            const diff = originalItem.calories_kcal - currentSwap.calories_kcal;
+            // Only count positive savings
+            return acc + (diff > 0 ? diff : 0);
+        }
+        return acc;
+    }, 0);
+
+    setChallengeProgress(totalSaved);
+
+    // Save to local storage
+    const currentProgress = storageService.getWeeklyChallengeProgress();
+    storageService.saveWeeklyChallengeProgress({
+        ...currentProgress,
+        savedCalories: totalSaved,
+    });
+  }, [swappedItems, items]);
+
 
   const calculateBurnMinutes = (calories: number) => {
     const weight = user.weight_kg ?? meta.defaults.weight_kg;
@@ -231,6 +264,8 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user }) =>
                     </div>
                 </div>
             </section>
+
+            <WeeklyChallengeCard progress={challengeProgress} goal={CHALLENGE_GOAL} />
             
             <section className="py-6 border-t border-zinc-800">
               <h3 className="text-xl font-bold text-amber-400 mb-4">Breakdown</h3>

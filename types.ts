@@ -1,5 +1,6 @@
 
 
+
 export interface User {
   name: string | null;
   weight_kg: number | null;
@@ -144,4 +145,9 @@ export interface Activity {
 
 export interface ActivityLibrary {
     [key: string]: Activity;
+}
+
+export interface WeeklyChallengeProgress {
+  savedCalories: number;
+  weekStartDate: string; // ISO string for the Monday of the current week
 }

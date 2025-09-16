@@ -235,8 +235,11 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen font-sans">
       <main className="container mx-auto px-4 py-8 md:py-12">
-        <header className="text-center mb-12 relative">
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight pt-12 md:pt-16">
+        <header className="text-center mb-12 relative pt-12 md:pt-16">
+          <p className="text-xl md:text-2xl text-zinc-300 font-medium tracking-wide mb-2">
+            It all starts with a calorie...
+          </p>
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight">
             <span className="block text-amber-400">The Hidden Equation</span>
             <span className="block text-white">You Can't Ignore.</span>
           </h1>

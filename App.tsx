@@ -88,8 +88,9 @@ const App: React.FC = () => {
           <div className="absolute top-0 right-0">
             <ThemeToggle />
           </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-red-500 to-yellow-500 pt-12 md:pt-16">
-            Calorie Reality Check
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-red-500 to-yellow-500 pt-12 md:pt-16">
+            <span className="block">Eat in Minutes.</span>
+            <span className="block">Burn in Hours.</span>
           </h1>
           <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
             Gamify your diet. Discover the surprising amount of exercise needed to burn off your favorite foods.

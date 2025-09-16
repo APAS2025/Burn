@@ -288,7 +288,7 @@ const App: React.FC = () => {
               {isLoading ? (
                  <LoadingAnalysis />
               ) : computation ? (
-                <ResultsDisplay computation={computation} />
+                <ResultsDisplay computation={computation} user={scenario.user} />
               ) : (
                 <div className="w-full min-h-[500px] h-full bg-zinc-900 rounded-2xl flex flex-col items-center justify-center border border-zinc-800 p-8 text-center">
                   <div className="relative mb-6">

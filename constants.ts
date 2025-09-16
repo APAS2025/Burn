@@ -16,6 +16,7 @@ export const ACTIVITY_LIBRARY: ActivityLibrary = {
 
 export const getDefaultScenario = (): Scenario => ({
   user: {
+    name: null,
     weight_kg: 75,
     height_cm: null,
     sex: null,

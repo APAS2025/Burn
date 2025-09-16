@@ -1,6 +1,7 @@
 
 
 export interface User {
+  name: string | null;
   weight_kg: number | null;
   height_cm: number | null;
   sex: string | null;

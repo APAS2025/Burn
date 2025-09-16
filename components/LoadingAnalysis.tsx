@@ -3,10 +3,15 @@ import { ChartLineIcon } from './Icons';
 
 const loadingMessages = [
   "Running the numbers...",
-  "Hope you're ready for the truth...",
-  "Calculating the cost of that cookie.",
-  "No shortcuts. No excuses. Just the numbers.",
+  "Let food be your medicine.",
+  "What gets measured gets managed.",
+  "Connecting the dots between what you eat and how you move.",
+  "Visualize how your food is nourishing every cell in your body.",
+  "This isn't about guilt. It's about awareness.",
+  "Track your own progress. Your journey is unique.",
+  "Transforming data into mindful decisions.",
   "Get ready to face your reality check.",
+  "Knowledge is power. Understanding your food is the first step.",
 ];
 
 const LoadingAnalysis: React.FC = () => {

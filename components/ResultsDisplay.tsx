@@ -1,7 +1,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { Computation, ComputationItem, FoodItem } from '../types';
+import { Computation, ComputationItem, FoodItem, User } from '../types';
 import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, ShareIcon, FlameIcon, CutleryIcon, CameraIcon, PlusCircleIcon, CheckCircleIcon, DownloadIcon, LinkIcon } from './Icons';
 import ComparisonView from './ComparisonView';
 import ReportCharts from './ReportCharts';
@@ -257,21 +257,31 @@ const ResultItemCard: React.FC<{
     );
 }
 
-const PDFReport: React.FC<{ computation: Computation }> = ({ computation }) => {
+const PDFReport: React.FC<{ computation: Computation, user: User }> = ({ computation, user }) => {
+    const reportDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+
     return (
-        <div id="pdf-report" className="p-12 bg-slate-50 text-slate-800" style={{ width: '800px', fontFamily: "'Poppins', sans-serif", minHeight: '1120px' }}>
+        <div id="pdf-report" className="p-12 bg-white text-slate-800" style={{ width: '800px', fontFamily: "'Poppins', sans-serif", minHeight: '1120px' }}>
             {/* Header */}
-            <header className="flex justify-between items-center pb-6 border-b-2 border-amber-400">
-                <div>
-                    <h1 className="text-4xl font-extrabold text-slate-800">{computation.report.title}</h1>
-                    <p className="text-slate-500 mt-1">A personalized analysis by Enzark</p>
+            <header className="flex justify-between items-start pb-6 border-b-2 border-amber-400">
+                <div className="flex-1">
+                    <EnzarkLogo className="h-10 mb-4"/>
+                    <h1 className="text-4xl font-extrabold text-slate-800 leading-tight">{computation.report.title}</h1>
+                    <p className="text-slate-500 mt-2 text-lg">Your personalized wellness analysis.</p>
                 </div>
-                <EnzarkLogo className="h-12"/>
+                <div className="text-right flex-shrink-0 ml-8">
+                    <p className="font-semibold text-slate-700 text-lg">{user.name || 'Personal Report'}</p>
+                    <p className="text-sm text-slate-500">{reportDate}</p>
+                </div>
             </header>
 
             {/* Summary */}
             <section className="my-10">
-                <p className="text-lg text-slate-600 leading-relaxed">{computation.report.summary}</p>
+                <p className="text-lg text-slate-600 leading-relaxed bg-amber-50 border border-amber-200 p-6 rounded-2xl">{computation.report.summary}</p>
             </section>
 
             {/* Key Metrics */}
@@ -288,19 +298,19 @@ const PDFReport: React.FC<{ computation: Computation }> = ({ computation }) => {
                         <div className="text-slate-500 text-sm font-medium">Total Burn Time</div>
                         <div className="text-5xl font-bold text-red-500 mt-2">{formatMinutes(computation.totals.burn_minutes)}</div>
                     </div>
-                    <div className="text-slate-500 text-sm font-medium mt-1">to burn</div>
+                    <div className="text-slate-500 text-sm font-medium mt-1">based on your activity</div>
                 </div>
                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center flex flex-col justify-between">
                     <div>
-                        <div className="text-slate-500 text-sm font-medium">Annualized</div>
+                        <div className="text-slate-500 text-sm font-medium">Annualized Impact</div>
                         <div className="text-5xl font-bold text-red-500 mt-2">~{computation.totals.annualized.pounds_equiv.toFixed(1)}</div>
                     </div>
-                    <div className="text-slate-500 text-sm font-medium mt-1">lbs/year</div>
+                    <div className="text-slate-500 text-sm font-medium mt-1">lbs/year if eaten daily</div>
                 </div>
             </section>
 
             {/* Visual Analysis */}
-            <section className="my-12 p-8 bg-white rounded-2xl shadow-lg border border-slate-200">
+            <section className="my-12 p-8 bg-slate-50 rounded-2xl shadow-inner border border-slate-200">
                 <h2 className="text-2xl font-bold text-slate-800 mb-6 text-center">Visual Analysis</h2>
                 <ReportCharts computation={computation} theme="light" />
             </section>
@@ -335,17 +345,42 @@ const PDFReport: React.FC<{ computation: Computation }> = ({ computation }) => {
                 </div>
             </section>
 
+            {/* Inspired Actions section */}
+            <section className="my-12">
+                <h2 className="text-2xl font-bold text-slate-800 mb-6">Your Inspired Actions</h2>
+                <div className="space-y-6 text-slate-600">
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                        <h3 className="font-bold text-slate-800 mb-2 text-lg">Be Mindful, Not Judgmental</h3>
+                        <p>Use this report as a tool for awareness. Understanding the energy cost of food can empower you to make more mindful choices that align with your health goals. It's about balance, not perfection.</p>
+                    </div>
+                    {computation.report.education_summary && (
+                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                            <h3 className="font-bold text-slate-800 mb-2 text-lg">Key Takeaway from Today's Foods</h3>
+                            <p>{computation.report.education_summary}</p>
+                        </div>
+                    )}
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                        <h3 className="font-bold text-slate-800 mb-2 text-lg">Find Joy in Movement</h3>
+                        <p>Remember that all movement counts! The "burn time" is just a number. The real goal is to find activities you genuinely enjoy. Consistency is far more important than intensity. Find your rhythm and celebrate every step.</p>
+                    </div>
+                </div>
+            </section>
+
             {/* Footer */}
             <footer className="text-center text-xs text-slate-500 mt-16 pt-6 border-t border-slate-300">
-                <p>Report generated on {new Date().toLocaleDateString()}. For informational purposes only. Consult a professional for health advice.</p>
+                <p>This report was generated on {reportDate}. It is for informational purposes only. Always consult a healthcare professional for personal health advice.</p>
                 <p className="mt-1 font-semibold">Powered by Enzark</p>
             </footer>
         </div>
     );
 };
 
+interface ResultsDisplayProps {
+    computation: Computation;
+    user: User;
+}
 
-const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation }) => {
+const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [comparisonSelection, setComparisonSelection] = useState<number[]>([]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -408,7 +443,7 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
         setIsGeneratingPdf(false);
     });
 
-  }, [isGeneratingPdf]);
+  }, [isGeneratingPdf, computation, user]);
 
   const handleComparisonSelect = (selectedIndex: number) => {
     setComparisonSelection(prev => {
@@ -579,7 +614,7 @@ const ResultsDisplay: React.FC<{ computation: Computation }> = ({ computation })
     {isModalOpen && <ShareCardModal computation={computation} onClose={() => setIsModalOpen(false)} />}
     {isGeneratingPdf && (
         <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -10 }}>
-            <PDFReport computation={computation} />
+            <PDFReport computation={computation} user={user} />
         </div>
     )}
     </>

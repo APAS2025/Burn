@@ -98,6 +98,19 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activi
       <h3 className="text-xl font-bold text-white mb-4">Personalization</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+        <div className="md:col-span-2">
+            <label htmlFor="name" className="block text-sm font-medium text-zinc-400 mb-1">Name (for PDF Report)</label>
+            <input
+                type="text"
+                id="name"
+                name="name"
+                value={user.name || ''}
+                onChange={handleUserInputChange}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-2 px-3 text-white placeholder-zinc-500 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition"
+                placeholder="e.g., Alex Doe"
+            />
+        </div>
+
         <div className="md:col-span-2 grid grid-cols-3 gap-4">
           <div className="col-span-2">
             <label htmlFor="weight_kg" className="block text-sm font-medium text-zinc-400 mb-1">Weight</label>

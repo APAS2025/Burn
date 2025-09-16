@@ -151,3 +151,22 @@ export interface WeeklyChallengeProgress {
   savedCalories: number;
   weekStartDate: string; // ISO string for the Monday of the current week
 }
+
+export type AchievementKey = 'firstStep' | 'savvySwapper' | 'calorieCommando' | 'aiAnalyst' | 'weekendWarrior';
+
+export interface GamificationProfile {
+  wellnessPoints: number;
+  mindfulEatingStreak: {
+    count: number;
+    lastLogDate: string | null; // ISO date string YYYY-MM-DD
+  };
+  achievements: {
+    [key in AchievementKey]?: boolean;
+  };
+  stats: {
+    totalAnalyses: number;
+    totalSwaps: number;
+    totalCaloriesSaved: number;
+    totalAiAnalyses: number;
+  };
+}

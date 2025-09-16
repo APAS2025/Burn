@@ -1,6 +1,7 @@
 
 
-import { Scenario, ActivityLibrary, FoodItem } from './types';
+
+import { Scenario, ActivityLibrary, FoodItem, AchievementKey } from './types';
 
 export const ACTIVITY_LIBRARY: ActivityLibrary = {
   walking_2_mph: { label: 'Walk, easy', speed_mph: 2.0, met: 2.8 },
@@ -130,4 +131,18 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: "Burger King Whopper", serving_label: "1 burger", calories_kcal: 660, eat_minutes: 8, servings: 1, base_calories_kcal: 660, base_eat_minutes: 8 },
   { name: "Chick-fil-A Chicken Sandwich", serving_label: "1 sandwich", calories_kcal: 440, eat_minutes: 6, servings: 1, base_calories_kcal: 440, base_eat_minutes: 6 },
   { name: "Five Guys Cheeseburger", serving_label: "1 burger", calories_kcal: 840, eat_minutes: 10, servings: 1, base_calories_kcal: 840, base_eat_minutes: 10 },
+];
+
+export interface Achievement {
+  key: AchievementKey;
+  name: string;
+  description: string;
+}
+
+export const ACHIEVEMENTS: Achievement[] = [
+  { key: 'firstStep', name: 'First Step', description: 'Complete your first analysis.' },
+  { key: 'savvySwapper', name: 'Savvy Swapper', description: 'Make your first healthy swap.' },
+  { key: 'calorieCommando', name: 'Calorie Commando', description: 'Save over 1,000 calories through swaps.' },
+  { key: 'aiAnalyst', name: 'AI Analyst', description: 'Analyze 5 meals using the AI camera.' },
+  { key: 'weekendWarrior', name: 'Weekend Warrior', description: 'Log a meal on a Saturday or Sunday.' },
 ];

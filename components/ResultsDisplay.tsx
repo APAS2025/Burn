@@ -114,9 +114,10 @@ const ShareButton: React.FC<{ text: string; withLabel?: boolean; isLink?: boolea
 interface ResultsDisplayProps {
   computation: Computation;
   user: User;
+  onGamificationUpdate: (...args: Parameters<typeof storageService.updateGamificationData>) => void;
 }
 
-const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user }) => {
+const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGamificationUpdate }) => {
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
   const [isPdfLoading, setIsPdfLoading] = useState<boolean>(false);
   const [swappedItems, setSwappedItems] = useState<(SwapItem | null)[]>([]);
@@ -174,6 +175,10 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user }) =>
       const newSwappedItems = [...swappedItems];
       newSwappedItems[index] = newSwapItem;
       setSwappedItems(newSwappedItems);
+      
+      const originalItem = items[index];
+      const calorie_diff = originalItem.calories_kcal - newSwapItem.calories_kcal;
+      onGamificationUpdate('HEALTHY_SWAP', { caloriesSaved: calorie_diff });
   };
 
   const handleRemoveSwap = (index: number) => {

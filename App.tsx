@@ -1,6 +1,6 @@
 // FIX: Import `useMemo` from React to resolve 'Cannot find name' error.
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { Scenario, FoodItem, Computation, CustomActivity } from './types';
+import { Scenario, FoodItem, Computation, CustomActivity, GamificationProfile } from './types';
 import { getDefaultScenario, ACTIVITY_LIBRARY } from './constants';
 import { getCalorieAnalysis } from './services/geminiService';
 import FoodInputList from './components/FoodInputList';
@@ -15,6 +15,7 @@ import EnzarkLogo from './components/EnzarkLogo';
 import ShareAppButton from './components/ShareAppButton';
 import SubscriptionCard from './components/SubscriptionCard';
 import ImageGalleryModal from './components/ImageGalleryModal';
+import GamificationDashboard from './components/GamificationDashboard';
 import * as storageService from './services/storageService';
 
 
@@ -34,6 +35,7 @@ const App: React.FC = () => {
   const [storedImages, setStoredImages] = useState<string[]>([]);
   const [reanalyzingImage, setReanalyzingImage] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'setup' | 'results'>('setup');
+  const [profile, setProfile] = useState<GamificationProfile>(storageService.getGamificationProfile());
 
 
   useEffect(() => {
@@ -71,6 +73,11 @@ const App: React.FC = () => {
     setStoredImages(storageService.getStoredImages());
   }, []);
 
+  const handleGamificationUpdate = useCallback((...args: Parameters<typeof storageService.updateGamificationData>) => {
+    const { updatedProfile } = storageService.updateGamificationData(...args);
+    setProfile(updatedProfile);
+  }, []);
+
   const updateFood = (index: number, updatedFood: FoodItem) => {
     const newFoods = [...scenario.foods];
     newFoods[index] = updatedFood;
@@ -97,6 +104,7 @@ const App: React.FC = () => {
 
   const addFoodsFromAnalysis = (newFoods: FoodItem[]) => {
     setScenario(prev => ({ ...prev, foods: [...prev.foods, ...newFoods] }));
+    handleGamificationUpdate('AI_ANALYSIS');
   };
 
   const removeFood = (index: number) => {
@@ -127,13 +135,14 @@ const App: React.FC = () => {
       
       const result = await getCalorieAnalysis(scenario);
       setComputation(result);
+      handleGamificationUpdate('ANALYSIS_COMPLETE');
     } catch (e) {
       console.error(e);
       setError('An error occurred while analyzing the data. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  }, [scenario]);
+  }, [scenario, handleGamificationUpdate]);
 
   const handleReset = useCallback(() => {
     const scenario = getDefaultScenario();
@@ -266,6 +275,7 @@ const App: React.FC = () => {
                 History
               </button>
             </div>
+            <GamificationDashboard profile={profile} />
             <UserInputCard
               user={scenario.user}
               preferences={scenario.preferences}
@@ -319,7 +329,11 @@ const App: React.FC = () => {
               {isLoading ? (
                  <LoadingAnalysis />
               ) : computation ? (
-                <ResultsDisplay computation={computation} user={scenario.user} />
+                <ResultsDisplay 
+                    computation={computation} 
+                    user={scenario.user}
+                    onGamificationUpdate={handleGamificationUpdate}
+                />
               ) : (
                 <div className="w-full min-h-[500px] h-full bg-zinc-900 rounded-2xl flex flex-col items-center justify-center border border-zinc-800 p-8 text-center">
                   <div className="relative mb-6">

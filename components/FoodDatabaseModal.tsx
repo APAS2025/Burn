@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { FoodItem } from '../types';
 import { FOOD_DATABASE } from '../constants';

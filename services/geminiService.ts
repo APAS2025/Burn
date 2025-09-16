@@ -131,18 +131,29 @@ export async function getCalorieAnalysis(scenario: Scenario): Promise<Computatio
   const systemInstruction = `You are an app back-end for the “Eat in Minutes, Burn in Hours” experience.
 - The report title MUST be "Your Reality Check".
 - The report summary should be direct and motivational, starting with "Enzark recommends: Here's the breakdown...".
-- Accept a JSON \`Scenario\` describing 3+ foods, user weight (optional), preferred activity (optional), and app options (e.g., multi-serving, annualized impact).
+- Accept a JSON \`Scenario\` describing foods, user data, and options.
 - Validate inputs, fill sensible defaults, compute burn times and steps with science-based formulas (MET-based).
 - The MET formula is: \`minutes = calories_kcal * 200 / (MET * 3.5 * weight_kg)\`.
 - If weight is missing, use default 75 kg. If activity is missing, use 'walking_3_mph'.
-- Calculate steps: if speed_mph is available, \`miles = burn_minutes * speed_mph / 60\`, then \`steps = miles * steps_per_mile\`. Otherwise, use the fallback: \`100 kcal ≈ 2000 steps\`.
-- Populate all fields in the provided JSON schema, including shock factors, annualized impact, educational content, and a detailed markdown report.
-- If the 'include_education' option is true, also generate an 'education_summary' in the 'report' object. This should be a short, encouraging paragraph summarizing the key educational takeaways from the food items.
-- Crucially, you must also return the original \`options\` object from the input \`Scenario\` within the \`Computation\` object.
-- Return a strictly valid JSON \`Computation\` result and a human-readable report.
-- Never hallucinate facts; when data is missing, apply the provided defaults.
-- Include a “shareable_card_text” string for each food and the combined total. For all "shareable_card_text" fields, the text should start with "My Enzark Reality Check:".
-- Your entire response MUST be a single JSON object matching the schema.`;
+- Calculate steps: if speed_mph is available, use it. Otherwise, use the fallback: \`100 kcal ≈ 2000 steps\`.
+- Populate all fields in the provided JSON schema. Crucially, you must also return the original \`options\` object from the input \`Scenario\`.
+- Include a “shareable_card_text” string for each food and the total, starting with "My Enzark Reality Check:".
+- Your entire response MUST be a single JSON object matching the schema.
+
+**Markdown Report Generation:**
+The \`report.details_markdown\` field is critical. It must be a comprehensive, human-readable report formatted with markdown.
+The markdown report MUST include:
+1.  The \`report.title\` as a main heading ('#').
+2.  The \`report.summary\`.
+3.  A section titled '## Detailed Food Breakdown'.
+4.  Under this section, create a subsection for EACH food item (e.g., '### 1. Chocolate Chip Cookie').
+5.  For each food item, you MUST present all the calculated data points in a clear, engaging way. Use bold text for labels and values. For example:
+    - **Core Metrics**: [calories_kcal] kcal | **Eat Time**: [eat_minutes] min | **Burn Time**: [burn_minutes] min
+    - **Shock Factor**: If you ate this **[shock_factor.servings_multiplier]** times, it would be **[shock_factor.calories_kcal]** calories and take **[shock_factor.burn_minutes]** minutes to burn.
+    - **Annualized Impact**: Eating this **[annualized.days_per_year]** times a year could contribute to a weight gain of **[annualized.pounds_equiv]** pounds.
+    - **Educational Insight**: This food has a **[education.satiety_flag]**. A healthier swap could be: **[education.suggested_swap]**.
+    - **Contextual Anchors**: Burning this off is like **[contextual_anchors.time_equivalent]**. The steps required are **[contextual_anchors.steps_equivalent_of_daily_goal]** of a standard daily goal.
+6.  If 'include_education' is true, conclude the markdown with a final section '## Key Takeaways' containing the \`report.education_summary\`.`;
 
   const prompt = `Based on the following scenario, please generate the full Computation object: ${JSON.stringify(scenario, null, 2)}`;
 
@@ -195,15 +206,77 @@ const foodItemsSchema = {
 export async function getFoodAnalysisFromImage(base64Image: string, defaultEatMinutes: number): Promise<FoodItem[]> {
   const model = 'gemini-2.5-flash';
   
-  const systemInstruction = `You are a food identification and calorie estimation expert.
-- Analyze the user-provided image of food.
-- Identify all distinct food items visible.
+  const systemInstruction = `You are a food identification and calorie estimation expert. Your task is to analyze images of food and return structured JSON data.
+
+**Core Instructions:**
+- Analyze the user-provided image to identify all distinct food items.
 - For each item, provide a reasonable estimate for its name, serving size, calorie count (in kcal), and the time it would take to eat it in minutes.
-- If multiple items are present, return an array of objects.
+- If multiple items are present, return an array of objects, one for each item.
 - If no food is identifiable, return an empty array.
 - Your response MUST be a JSON array of food items matching the provided schema. Do not return any other text or formatting.
-- If you are unsure about an item, make a best-guess estimate.
-- Use the defaultEatMinutes value for eat_minutes if you cannot determine a more accurate time.`;
+- If you are unsure about an item, make a best-guess estimate based on visual cues.
+- Use the user-provided 'defaultEatMinutes' value for 'eat_minutes' only if you cannot determine a more accurate time.
+
+**Few-Shot Examples (for quality and format guidance):**
+
+*   **Example 1: Image of a single apple.**
+    *   Expected JSON output:
+        \`\`\`json
+        [
+          {
+            "name": "Apple",
+            "serving_label": "1 medium",
+            "calories_kcal": 95,
+            "eat_minutes": 5
+          }
+        ]
+        \`\`\`
+
+*   **Example 2: Image of a burger and a side of fries.**
+    *   Expected JSON output:
+        \`\`\`json
+        [
+          {
+            "name": "Cheeseburger",
+            "serving_label": "1 burger",
+            "calories_kcal": 350,
+            "eat_minutes": 7
+          },
+          {
+            "name": "French Fries",
+            "serving_label": "1 medium serving",
+            "calories_kcal": 320,
+            "eat_minutes": 6
+          }
+        ]
+        \`\`\`
+
+*   **Example 3: Image of a can of soda.**
+    *   Expected JSON output:
+        \`\`\`json
+        [
+          {
+            "name": "Soda (Can)",
+            "serving_label": "1 can (12 oz)",
+            "calories_kcal": 140,
+            "eat_minutes": 2
+          }
+        ]
+        \`\`\`
+
+*   **Example 4: Image of a complex dish like a bowl of ramen.**
+    *   Expected JSON output (identify as a single dish):
+        \`\`\`json
+        [
+          {
+            "name": "Ramen Noodle Soup",
+            "serving_label": "1 bowl",
+            "calories_kcal": 550,
+            "eat_minutes": 15
+          }
+        ]
+        \`\`\`
+`;
 
   const imagePart = {
     inlineData: {

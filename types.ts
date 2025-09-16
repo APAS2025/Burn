@@ -43,6 +43,10 @@ export interface FoodItem {
   base_eat_minutes: number;   // Eat minutes for 1 serving
 }
 
+export interface SwapItem extends FoodItem {
+  burn_minutes: number;
+}
+
 export interface Scenario {
   user: User;
   preferences: Preferences;

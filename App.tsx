@@ -33,6 +33,8 @@ const App: React.FC = () => {
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState<boolean>(false);
   const [storedImages, setStoredImages] = useState<string[]>([]);
   const [reanalyzingImage, setReanalyzingImage] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<'setup' | 'results'>('setup');
+
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -106,6 +108,7 @@ const App: React.FC = () => {
     setIsLoading(true);
     setError(null);
     setComputation(null);
+    setActiveView('results');
     try {
       // Validate foods
       if (scenario.foods.length === 0) {
@@ -139,6 +142,7 @@ const App: React.FC = () => {
     setScenario(scenario);
     setComputation(null);
     setError(null);
+    setActiveView('setup');
   }, []);
 
   const handleImageAnalyzed = (imageData: string) => {
@@ -197,9 +201,36 @@ const App: React.FC = () => {
           </p>
         </header>
 
+        {/* Mobile View Toggle */}
+        <div className="lg:hidden mb-6">
+            <div className="flex bg-zinc-800 border border-zinc-700 rounded-xl p-1">
+                <button
+                    onClick={() => setActiveView('setup')}
+                    className={`w-1/2 rounded-lg py-2.5 text-sm font-bold transition-colors ${
+                        activeView === 'setup' ? 'bg-amber-400 text-zinc-900 shadow-md' : 'text-zinc-400 hover:bg-zinc-700'
+                    }`}
+                    aria-label="Switch to setup view"
+                    aria-pressed={activeView === 'setup'}
+                >
+                    Setup
+                </button>
+                <button
+                    onClick={() => setActiveView('results')}
+                    className={`w-1/2 rounded-lg py-2.5 text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        activeView === 'results' ? 'bg-amber-400 text-zinc-900 shadow-md' : 'text-zinc-400 hover:bg-zinc-700'
+                    }`}
+                    disabled={!computation && !isLoading}
+                    aria-label="Switch to results view"
+                    aria-pressed={activeView === 'results'}
+                >
+                    Results
+                </button>
+            </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Input Column */}
-          <div className="flex flex-col gap-8">
+          <div className={`flex-col gap-8 ${activeView === 'setup' ? 'flex' : 'hidden'} lg:flex`}>
             <FoodInputList
               foods={scenario.foods}
               onUpdateFood={updateFood}
@@ -282,8 +313,8 @@ const App: React.FC = () => {
           </div>
 
           {/* Output Column */}
-          <div className="relative">
-            <div className="sticky top-8">
+          <div className={`${activeView === 'results' ? 'block' : 'hidden'} lg:block relative`}>
+            <div className="lg:sticky lg:top-8">
               {error && <div className="bg-red-500/20 border border-red-500/50 text-red-400 p-4 rounded-xl mb-4 animate-pulse">{error}</div>}
               {isLoading ? (
                  <LoadingAnalysis />

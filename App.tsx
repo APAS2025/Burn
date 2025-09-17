@@ -10,7 +10,7 @@ import OptionsCard from './components/OptionsCard';
 import ResultsDisplay from './components/ResultsDisplay';
 import FoodDatabaseModal from './components/FoodDatabaseModal';
 import CameraAnalysisModal from './components/CameraAnalysisModal';
-import { PlusIcon, DatabaseIcon, CameraIcon, ChartLineIcon, ResetIcon, HistoryIcon, QuestionMarkCircleIcon, LightbulbIcon, DashboardIcon } from './components/Icons';
+import { PlusIcon, DatabaseIcon, CameraIcon, ChartLineIcon, ResetIcon, HistoryIcon, QuestionMarkCircleIcon, LightbulbIcon, DashboardIcon, BarcodeIcon } from './components/Icons';
 import LoadingAnalysis from './components/LoadingAnalysis';
 import EnzarkLogo from './components/EnzarkLogo';
 import ShareAppButton from './components/ShareAppButton';
@@ -31,6 +31,7 @@ import HealthFactCard from './components/HealthFactCard';
 import DashboardView from './components/DashboardView';
 import UpgradeModal from './components/UpgradeModal';
 import ChallengeSelectionCard from './components/ChallengeSelectionCard';
+import BarcodeScannerModal from './components/BarcodeScannerModal';
 
 
 const MAX_FOOD_ITEMS = 10;
@@ -81,6 +82,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDbModalOpen, setIsDbModalOpen] = useState<boolean>(false);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState<boolean>(false);
+  const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState<boolean>(false);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState<boolean>(false);
   const [isRewardsModalOpen, setIsRewardsModalOpen] = useState<boolean>(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState<boolean>(false);
@@ -98,6 +100,8 @@ const App: React.FC = () => {
 
   const isAuthenticated = !!currentUser;
   const isPremiumUser = currentUser?.subscriptionTier === 'premium';
+  const isBarcodeScanningSupported = useMemo(() => typeof window !== 'undefined' && 'BarcodeDetector' in window, []);
+
 
   useEffect(() => {
     const user = authService.getCurrentUser();
@@ -488,7 +492,7 @@ const App: React.FC = () => {
                     onRemoveFood={removeFood}
                     onOpenCameraForIndex={handleOpenCameraForIndex}
                   />
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <button
                       id="add-manual-button"
                       onClick={addFood}
@@ -508,6 +512,27 @@ const App: React.FC = () => {
                     </button>
                     <div className="relative group">
                       <button
+                        onClick={() => setIsBarcodeModalOpen(true)}
+                        disabled={isFoodLimitReached || !isBarcodeScanningSupported}
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
+                        aria-describedby={!isBarcodeScanningSupported ? "barcode-unsupported-tooltip" : undefined}
+                      >
+                        <BarcodeIcon />
+                        Scan
+                      </button>
+                      {!isBarcodeScanningSupported && (
+                        <div
+                          id="barcode-unsupported-tooltip"
+                          role="tooltip"
+                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2.5 bg-zinc-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none invisible group-hover:visible"
+                        >
+                          Barcode scanning isn't supported by your browser.
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-700"></div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="relative group">
+                      <button
                         onClick={() => {
                           setCameraTargetIndex(null);
                           setIsCameraModalOpen(true);
@@ -519,24 +544,24 @@ const App: React.FC = () => {
                         <CameraIcon />
                         With AI
                       </button>
-                      <div
+                       <div
                           id="ai-tooltip"
                           role="tooltip"
                           className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2.5 bg-zinc-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none invisible group-hover:visible"
                       >
                           <div className="flex items-center gap-2">
                               <LightbulbIcon className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                              <span>Tip: You can scan your whole plate at once!</span>
+                              <span>Tip: Scan your plate or a single item!</span>
                           </div>
                           <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-700"></div>
                       </div>
                     </div>
                     <button
                       onClick={() => setIsGalleryModalOpen(true)}
-                      className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
+                      className="lg:col-span-4 w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
                     >
                       <HistoryIcon />
-                      History
+                      Analysis History
                     </button>
                   </div>
                   {isFoodLimitReached && (
@@ -693,6 +718,16 @@ const App: React.FC = () => {
             images={storedImages}
             onSelectImage={handleSelectImageFromGallery}
             onDeleteImage={handleDeleteImage}
+        />
+      )}
+       {isBarcodeModalOpen && (
+        <BarcodeScannerModal
+          isOpen={isBarcodeModalOpen}
+          onClose={() => setIsBarcodeModalOpen(false)}
+          onFoodScanned={(food) => {
+            addFoodFromDatabase(food);
+            setIsBarcodeModalOpen(false);
+          }}
         />
       )}
       {isCameraModalOpen && (

@@ -4,13 +4,13 @@
   "description": "Discover the surprising amount of exercise needed to burn off your favorite foods.",
   "icons": [
     {
-      "src": "https://placehold.co/192x192/18181b/facc15/png?text=CRC&font=poppins",
+      "src": "/icons/icon-192x192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "https://placehold.co/512x512/18181b/facc15/png?text=CRC&font=poppins",
+      "src": "/icons/icon-512x512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"

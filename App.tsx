@@ -22,6 +22,7 @@ import OnboardingGuide from './components/OnboardingGuide';
 import * as storageService from './services/storageService';
 import BottomNavBar from './components/BottomNavBar';
 import WelcomeBanner from './components/WelcomeBanner';
+import PreCalculationDashboard from './components/PreCalculationDashboard';
 
 const MAX_FOOD_ITEMS = 10;
 
@@ -327,6 +328,13 @@ const App: React.FC = () => {
   const currentTotalCalories = useMemo(() => {
     return scenario.foods.reduce((acc, food) => acc + Math.round(food.calories_kcal), 0);
   }, [scenario.foods]);
+  
+  const selectedActivityLabel = useMemo(() => {
+    const all = [...allActivities.default, ...allActivities.custom];
+    const activity = all.find(a => a.key === scenario.preferences.activity);
+    return activity ? activity.label : 'N/A';
+  }, [allActivities, scenario.preferences.activity]);
+
 
   const isFoodLimitReached = scenario.foods.length >= MAX_FOOD_ITEMS;
 
@@ -496,14 +504,12 @@ const App: React.FC = () => {
                     onGamificationUpdate={handleGamificationUpdate}
                 />
               ) : (
-                <div className="w-full min-h-[500px] h-full bg-zinc-900 rounded-2xl flex flex-col items-center justify-center border border-zinc-800 p-8 text-center">
-                  <div className="relative mb-6">
-                    <div className="absolute -inset-2 bg-amber-400 rounded-full blur-xl opacity-20"></div>
-                    <ChartLineIcon className="relative w-16 h-16 text-amber-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white">Your Metrics Await</h3>
-                  <p className="text-zinc-400 mt-2 max-w-sm">Enter your food items, adjust the settings, and click "Calculate" to see the hidden equation.</p>
-                </div>
+                <PreCalculationDashboard
+                    user={scenario.user}
+                    totalCalories={currentTotalCalories}
+                    itemCount={scenario.foods.length}
+                    activityLabel={selectedActivityLabel}
+                />
               )}
             </div>
           </div>

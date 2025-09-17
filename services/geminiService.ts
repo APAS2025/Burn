@@ -188,11 +188,11 @@ const foodItemsSchema = {
       },
       serving_label: {
         type: Type.STRING,
-        description: "A reasonable serving label for this item, e.g., '1 cup', '1 medium apple'."
+        description: "A reasonable serving label for this item, including an estimated quantity/weight. E.g., '1 cup (~200g)', '8 oz steak'."
       },
       calories_kcal: {
         type: Type.NUMBER,
-        description: "The estimated number of calories in kcal for the serving."
+        description: "The estimated number of calories in kcal for the identified serving."
       },
       eat_minutes: {
         type: Type.NUMBER,
@@ -206,14 +206,15 @@ const foodItemsSchema = {
 export async function getFoodAnalysisFromImage(base64Image: string, defaultEatMinutes: number): Promise<FoodItem[]> {
   const model = 'gemini-2.5-flash';
   
-  const systemInstruction = `You are a food identification and calorie estimation expert. Your task is to analyze images of food and return structured JSON data.
+  const systemInstruction = `You are a food identification and nutritional estimation expert. Your task is to analyze images of food and return structured JSON data.
 
 **Core Instructions:**
 - Analyze the user-provided image to identify all distinct food items.
-- For each item, provide a reasonable estimate for its name, serving size, calorie count (in kcal), and the time it would take to eat it in minutes.
+- For each item, you MUST provide a reasonable, real-world estimate for its quantity, weight, or volume. This is critical.
+- Based on this quantity, provide estimates for its name, calorie count (in kcal), and the time it would take to eat it.
+- Your response MUST be a JSON array of food items matching the provided schema. Do not return any other text or formatting.
 - If multiple items are present, return an array of objects, one for each item.
 - If no food is identifiable, return an empty array.
-- Your response MUST be a JSON array of food items matching the provided schema. Do not return any other text or formatting.
 - If you are unsure about an item, make a best-guess estimate based on visual cues.
 - Use the user-provided 'defaultEatMinutes' value for 'eat_minutes' only if you cannot determine a more accurate time.
 
@@ -225,7 +226,7 @@ export async function getFoodAnalysisFromImage(base64Image: string, defaultEatMi
         [
           {
             "name": "Apple",
-            "serving_label": "1 medium",
+            "serving_label": "1 medium (~182g)",
             "calories_kcal": 95,
             "eat_minutes": 5
           }
@@ -238,13 +239,13 @@ export async function getFoodAnalysisFromImage(base64Image: string, defaultEatMi
         [
           {
             "name": "Cheeseburger",
-            "serving_label": "1 burger",
-            "calories_kcal": 350,
-            "eat_minutes": 7
+            "serving_label": "1 burger (~250g)",
+            "calories_kcal": 450,
+            "eat_minutes": 8
           },
           {
             "name": "French Fries",
-            "serving_label": "1 medium serving",
+            "serving_label": "1 medium serving (~117g)",
             "calories_kcal": 320,
             "eat_minutes": 6
           }
@@ -256,7 +257,7 @@ export async function getFoodAnalysisFromImage(base64Image: string, defaultEatMi
         \`\`\`json
         [
           {
-            "name": "Soda (Can)",
+            "name": "Cola Soda",
             "serving_label": "1 can (12 oz)",
             "calories_kcal": 140,
             "eat_minutes": 2
@@ -265,12 +266,12 @@ export async function getFoodAnalysisFromImage(base64Image: string, defaultEatMi
         \`\`\`
 
 *   **Example 4: Image of a complex dish like a bowl of ramen.**
-    *   Expected JSON output (identify as a single dish):
+    *   Expected JSON output (identify as a single dish with estimated size):
         \`\`\`json
         [
           {
             "name": "Ramen Noodle Soup",
-            "serving_label": "1 bowl",
+            "serving_label": "1 large bowl (~500g)",
             "calories_kcal": 550,
             "eat_minutes": 15
           }
@@ -286,7 +287,7 @@ export async function getFoodAnalysisFromImage(base64Image: string, defaultEatMi
   };
 
   const textPart = {
-    text: `Identify the food in this image. Use a default eating time of ${defaultEatMinutes} minutes if a more specific one isn't obvious.`
+    text: `Identify the food in this image. For each item, estimate the quantity/weight and include it in the serving_label. Use a default eating time of ${defaultEatMinutes} minutes if a more specific one isn't obvious.`
   };
 
   try {

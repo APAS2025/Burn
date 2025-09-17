@@ -21,6 +21,7 @@ import RewardsModal from './components/RewardsModal';
 import OnboardingGuide from './components/OnboardingGuide';
 import * as storageService from './services/storageService';
 import BottomNavBar from './components/BottomNavBar';
+import WelcomeBanner from './components/WelcomeBanner';
 
 const MAX_FOOD_ITEMS = 10;
 
@@ -84,6 +85,7 @@ const App: React.FC = () => {
   const [challengeMode, setChallengeMode] = useState<ChallengeMode | null>(null);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(!localStorage.getItem('onboardingCompleted'));
   const [cameraTargetIndex, setCameraTargetIndex] = useState<number | null>(null);
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(!sessionStorage.getItem('welcomeBannerDismissed'));
 
 
   useEffect(() => {
@@ -224,12 +226,18 @@ const App: React.FC = () => {
     const newFoods = scenario.foods.filter((_, i) => i !== index);
     setScenario({ ...scenario, foods: newFoods });
   };
+
+  const handleDismissWelcomeBanner = () => {
+    sessionStorage.setItem('welcomeBannerDismissed', 'true');
+    setShowWelcomeBanner(false);
+  };
   
   const handleCalculate = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     setComputation(null);
     setActiveView('results');
+    handleDismissWelcomeBanner();
     try {
       // Validate foods
       if (scenario.foods.length === 0) {
@@ -354,6 +362,9 @@ const App: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Input Column */}
           <div className={`flex-col gap-8 ${activeView === 'setup' ? 'flex' : 'hidden'} lg:flex`}>
+            {showWelcomeBanner && !computation && (
+              <WelcomeBanner onDismiss={handleDismissWelcomeBanner} />
+            )}
             {challengeMode && (
               <ChallengeBanner
                 challengerName={challengeMode.challengerName}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { User, Preferences, CustomActivity } from '../types';
 import { CogIcon } from './Icons';
 import CustomActivityModal from './CustomActivityModal';
@@ -50,6 +50,31 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activi
   const [displayWeight, setDisplayWeight] = useState<string>('');
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
 
+  const bmiData = useMemo(() => {
+    if (user.weight_kg && user.height_cm && user.weight_kg > 0 && user.height_cm > 0) {
+      const heightInMeters = user.height_cm / 100;
+      const bmi = user.weight_kg / (heightInMeters * heightInMeters);
+      let category = '';
+      let colorClass = '';
+
+      if (bmi < 18.5) {
+        category = 'Underweight';
+        colorClass = 'bg-blue-500/20 text-blue-300';
+      } else if (bmi >= 18.5 && bmi <= 24.9) {
+        category = 'Normal';
+        colorClass = 'bg-green-500/20 text-green-300';
+      } else if (bmi >= 25 && bmi <= 29.9) {
+        category = 'Overweight';
+        colorClass = 'bg-amber-500/20 text-amber-300';
+      } else {
+        category = 'Obesity';
+        colorClass = 'bg-red-500/20 text-red-300';
+      }
+      return { value: bmi.toFixed(1), category, colorClass };
+    }
+    return null;
+  }, [user.weight_kg, user.height_cm]);
+
   useEffect(() => {
     if (user.weight_kg === null || isNaN(user.weight_kg)) {
       setDisplayWeight('');
@@ -97,7 +122,6 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activi
     <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 border-t-amber-500/20">
       <h3 className="text-xl font-bold text-white mb-4">Personalization</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
         <div className="md:col-span-2">
             <label htmlFor="name" className="block text-sm font-medium text-zinc-400 mb-1">Name (for PDF Report)</label>
             <input
@@ -131,9 +155,9 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activi
              />
           </div>
         </div>
-
+        
         <div>
-          <label htmlFor="height_cm" className="block text-sm font-medium text-zinc-400 mb-1">Height (cm, Optional)</label>
+          <label htmlFor="height_cm" className="block text-sm font-medium text-zinc-400 mb-1">Height (cm)</label>
           <input
             type="number"
             id="height_cm"
@@ -144,7 +168,25 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activi
             placeholder="e.g., 175"
           />
         </div>
-        <div>
+        
+        {bmiData ? (
+          <div className="animate-pop-in">
+              <label className="block text-sm font-medium text-zinc-400 mb-1">BMI</label>
+              <div className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-2 px-3 text-white flex justify-between items-center h-[42px]">
+                  <span className="font-bold">{bmiData.value}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${bmiData.colorClass}`}>{bmiData.category}</span>
+              </div>
+          </div>
+        ) : (
+             <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">BMI</label>
+                <div className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-2 px-3 text-zinc-500 flex items-center h-[42px]">
+                    Enter height & weight
+                </div>
+            </div>
+        )}
+
+        <div className="md:col-span-1">
           <label htmlFor="age" className="block text-sm font-medium text-zinc-400 mb-1">Age (Optional)</label>
           <input
             type="number"
@@ -156,7 +198,7 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activi
             placeholder="e.g., 30"
           />
         </div>
-        <div>
+        <div className="md:col-span-1">
           <label htmlFor="sex" className="block text-sm font-medium text-zinc-400 mb-1">Sex (Optional)</label>
           <select
             id="sex"

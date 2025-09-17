@@ -74,13 +74,13 @@ const FoodInputCard: React.FC<{
               <div
                 id={`camera-tooltip-${index}`}
                 role="tooltip"
-                className="absolute bottom-full right-1/2 translate-x-1/2 mb-2 w-max max-w-xs p-2.5 bg-zinc-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none invisible group-hover:visible"
+                className="absolute bottom-full right-full mr-2 mb-2 w-max max-w-xs p-2.5 bg-zinc-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none invisible group-hover:visible"
               >
                   <div className="flex items-center gap-2">
                       <LightbulbIcon className="w-4 h-4 text-amber-400 flex-shrink-0" />
                       <span>Tip: You can scan your whole plate!</span>
                   </div>
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-700"></div>
+                  <div className="absolute right-3 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-700"></div>
               </div>
             </div>
           </div>

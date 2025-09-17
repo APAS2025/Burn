@@ -24,7 +24,7 @@ const computationSchema = {
           type: Type.OBJECT,
           properties: {
             activity_key: { type: Type.STRING },
-            met: { type: Type.NUMBER },
+            met: { type: Type.NUMBER, nullable: true },
             speed_mph: { type: Type.NUMBER, nullable: true },
           },
         },
@@ -138,7 +138,15 @@ export async function getCalorieAnalysis(scenario: Scenario): Promise<Computatio
 - Calculate steps: if speed_mph is available, use it. Otherwise, use the fallback: \`100 kcal ≈ 2000 steps\`.
 - Populate all fields in the provided JSON schema. Crucially, you must also return the original \`options\` object from the input \`Scenario\`.
 - Include a “shareable_card_text” string for each food and the total. It should start with "My Enzark Reality Check:" and summarize the key findings. If the user's name is provided in \`scenario.user.name\`, you must include it in the text. Also mention the activity used for the calculation.
-- Your entire response MUST be a single JSON object matching the schema.
+
+**Personalized Journey:**
+The user has selected a primary health challenge: \`scenario.user.primary_challenge\`.
+If this value is present (e.g., 'low_energy', 'stubborn_weight', 'muscle_loss', 'mental_fog'), you MUST subtly tailor the \`report.summary\` and \`report.education_summary\` to resonate with this challenge.
+- For 'low_energy', focus on how the meal impacts energy levels (e.g., "This meal might lead to an energy crash...").
+- For 'stubborn_weight', focus on caloric density and satiety (e.g., "High-calorie, low-satiety foods like this can make weight management challenging...").
+- For 'muscle_loss', mention the importance of protein (e.g., "To support muscle maintenance, consider meals with higher protein...").
+- For 'mental_fog', relate the food to cognitive function (e.g., "High-sugar meals can sometimes contribute to a feeling of fogginess...").
+Do NOT be preachy or give direct medical advice. The tone should be empathetic and insightful, guiding them on their journey.
 
 **Markdown Report Generation:**
 The \`report.details_markdown\` field is critical. It must be a comprehensive, human-readable report formatted with markdown.
@@ -153,7 +161,9 @@ The markdown report MUST include:
     - **Annualized Impact**: Eating this **[annualized.days_per_year]** times a year could contribute to a weight gain of **[annualized.pounds_equiv]** pounds.
     - **Educational Insight**: This food has a **[education.satiety_flag]**. A healthier swap could be: **[education.suggested_swap]**.
     - **Contextual Anchors**: Burning this off is like **[contextual_anchors.time_equivalent]**. The steps required are **[contextual_anchors.steps_equivalent_of_daily_goal]** of a standard daily goal.
-6.  If 'include_education' is true, conclude the markdown with a final section '## Key Takeaways' containing the \`report.education_summary\`.`;
+6.  If 'include_education' is true, conclude the markdown with a final section '## Key Takeaways' containing the \`report.education_summary\`.
+
+Your entire response MUST be a single JSON object matching the schema.`;
 
   const prompt = `Based on the following scenario, please generate the full Computation object: ${JSON.stringify(scenario, null, 2)}`;
 

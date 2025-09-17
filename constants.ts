@@ -1,5 +1,6 @@
-
 import { Scenario, ActivityLibrary, FoodItem, AchievementKey } from './types';
+import { BoltIcon, BrainIcon, DumbbellIcon, ScaleIcon } from './components/Icons';
+import React from 'react';
 
 export const ACTIVITY_LIBRARY: ActivityLibrary = {
   walking_2_mph: { label: 'Walk, easy', speed_mph: 2.0, met: 2.8 },
@@ -19,16 +20,19 @@ export const getDefaultScenario = (): Scenario => ({
     // FIX: Add missing 'email' property to conform to the User type.
     email: '',
     weight_kg: 75,
-    height_cm: null,
+    height_cm: 175, // approx 5'9"
     sex: null,
-    age: null
+    age: null,
+    subscriptionTier: 'free',
+    primary_challenge: null,
   },
   preferences: {
     default_eat_minutes: 5,
     activity: "walking_3_mph", 
     pace_override: null,
     steps_per_mile: 2000,
-    weight_unit: 'kg',
+    weight_unit: 'lbs',
+    height_unit: 'ft_in',
     custom_activities: [],
   },
   options: {
@@ -51,6 +55,42 @@ export const getDefaultScenario = (): Scenario => ({
     }
   ]
 });
+
+export const USER_CHALLENGES = [
+  {
+    key: 'low_energy',
+    title: 'Boost Energy',
+    description: "Feel more vibrant and avoid energy crashes throughout your day.",
+    // FIX: Pass component reference directly to avoid type inference issues.
+    icon: BoltIcon,
+    color: 'amber',
+  },
+  {
+    key: 'stubborn_weight',
+    title: 'Tackle Stubborn Weight',
+    description: "Navigate weight gain or plateaus with a fresh, insightful perspective.",
+    // FIX: Pass component reference directly to avoid type inference issues.
+    icon: ScaleIcon,
+    color: 'green',
+  },
+  {
+    key: 'muscle_loss',
+    title: 'Maintain Muscle',
+    description: "Understand how your food choices can help support and preserve muscle mass.",
+    // FIX: Pass component reference directly to avoid type inference issues.
+    icon: DumbbellIcon,
+    color: 'blue',
+  },
+  {
+    key: 'mental_fog',
+    title: 'Improve Mental Clarity',
+    description: "Address feelings of lethargy and fogginess by exploring your nutrition.",
+    // FIX: Pass component reference directly to avoid type inference issues.
+    icon: BrainIcon,
+    color: 'purple',
+  },
+];
+
 
 export const FOOD_DATABASE: FoodItem[] = [
   // Drinks

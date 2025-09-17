@@ -1,3 +1,4 @@
+
 // FIX: Import `useMemo` from React to resolve 'Cannot find name' error.
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Scenario, FoodItem, Computation, CustomActivity, GamificationProfile, ChallengeMode, OnboardingStep, User } from './types';
@@ -9,7 +10,7 @@ import OptionsCard from './components/OptionsCard';
 import ResultsDisplay from './components/ResultsDisplay';
 import FoodDatabaseModal from './components/FoodDatabaseModal';
 import CameraAnalysisModal from './components/CameraAnalysisModal';
-import { PlusIcon, DatabaseIcon, CameraIcon, ChartLineIcon, ResetIcon, HistoryIcon, QuestionMarkCircleIcon, LightbulbIcon } from './components/Icons';
+import { PlusIcon, DatabaseIcon, CameraIcon, ChartLineIcon, ResetIcon, HistoryIcon, QuestionMarkCircleIcon, LightbulbIcon, DashboardIcon } from './components/Icons';
 import LoadingAnalysis from './components/LoadingAnalysis';
 import EnzarkLogo from './components/EnzarkLogo';
 import ShareAppButton from './components/ShareAppButton';
@@ -26,6 +27,10 @@ import PreCalculationDashboard from './components/PreCalculationDashboard';
 import * as authService from './services/authService';
 import AuthModal from './components/AuthModal';
 import UserProfile from './components/UserProfile';
+import HealthFactCard from './components/HealthFactCard';
+import DashboardView from './components/DashboardView';
+import UpgradeModal from './components/UpgradeModal';
+import ChallengeSelectionCard from './components/ChallengeSelectionCard';
 
 
 const MAX_FOOD_ITEMS = 10;
@@ -78,9 +83,10 @@ const App: React.FC = () => {
   const [isCameraModalOpen, setIsCameraModalOpen] = useState<boolean>(false);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState<boolean>(false);
   const [isRewardsModalOpen, setIsRewardsModalOpen] = useState<boolean>(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState<boolean>(false);
   const [storedImages, setStoredImages] = useState<string[]>([]);
   const [reanalyzingImage, setReanalyzingImage] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'setup' | 'results'>('setup');
+  const [activeView, setActiveView] = useState<'setup' | 'results' | 'dashboard'>('setup');
   const [profile, setProfile] = useState<GamificationProfile>(storageService.getGamificationProfile());
   const [challengeMode, setChallengeMode] = useState<ChallengeMode | null>(null);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(!localStorage.getItem('onboardingCompleted'));
@@ -91,12 +97,15 @@ const App: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
 
   const isAuthenticated = !!currentUser;
+  const isPremiumUser = currentUser?.subscriptionTier === 'premium';
 
   useEffect(() => {
     const user = authService.getCurrentUser();
     if (user) {
       setCurrentUser(user);
-      setScenario(prev => ({...prev, user: { ...prev.user, ...user } }));
+      setScenario(prev => ({...prev, user: { ...prev.user, ...user, primary_challenge: sessionStorage.getItem('primaryChallenge') } }));
+    } else {
+      setScenario(prev => ({...prev, user: { ...prev.user, primary_challenge: sessionStorage.getItem('primaryChallenge') } }));
     }
      const savedActivities = storageService.getCustomActivities();
      setScenario(prev => ({
@@ -199,6 +208,11 @@ const App: React.FC = () => {
         authService.updateUser(updatedUser);
         setCurrentUser(updatedUser);
     }
+  };
+
+  const handleChallengeSelect = (challengeKey: string) => {
+    sessionStorage.setItem('primaryChallenge', challengeKey);
+    handleUserChange({ ...scenario.user, primary_challenge: challengeKey });
   };
 
   const updateFood = (index: number, updatedFood: FoodItem) => {
@@ -307,6 +321,11 @@ const App: React.FC = () => {
     // Keep custom activities on reset
     const savedActivities = storageService.getCustomActivities();
     defaultScenario.preferences.custom_activities = savedActivities;
+    
+    // Clear the selected challenge for a new session
+    sessionStorage.removeItem('primaryChallenge');
+    defaultScenario.user.primary_challenge = null;
+
 
     // Keep logged-in user's data
     if (currentUser) {
@@ -331,6 +350,7 @@ const App: React.FC = () => {
   };
   
   const handleSelectImageFromGallery = (imageData: string) => {
+    setCameraTargetIndex(null); // Ensure we are in "add" mode when analyzing from history
     setReanalyzingImage(imageData);
     setIsGalleryModalOpen(false);
     setIsCameraModalOpen(true);
@@ -358,6 +378,19 @@ const App: React.FC = () => {
   const handleOpenCameraForIndex = (index: number) => {
     setCameraTargetIndex(index);
     setIsCameraModalOpen(true);
+  };
+
+  const handleDashboardClick = () => {
+    if (!isAuthenticated) {
+        setAuthMode('signup');
+        setIsAuthModalOpen(true);
+        return;
+    }
+    if (isPremiumUser) {
+        setActiveView('dashboard');
+    } else {
+        setIsUpgradeModalOpen(true);
+    }
   };
 
   const allActivities = useMemo(() => {
@@ -391,6 +424,12 @@ const App: React.FC = () => {
       <main className="container mx-auto px-4 py-8 md:py-12 pb-28 md:pb-12">
         <header className="text-center mb-12 relative pt-12 md:pt-16">
             <div className="absolute top-4 right-4 flex items-center gap-4">
+                {isAuthenticated && (
+                  <button onClick={handleDashboardClick} className="hidden md:flex items-center gap-2 py-2 px-4 bg-zinc-800 border border-zinc-700 rounded-full hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold">
+                    <DashboardIcon />
+                    Dashboard
+                  </button>
+                )}
                 {isAuthenticated ? (
                     <UserProfile user={currentUser} onLogout={handleLogout} />
                 ) : (
@@ -421,156 +460,170 @@ const App: React.FC = () => {
             Discover the surprising amount of exercise needed to burn off your favorite foods.
           </p>
         </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Input Column */}
-          <div className={`flex-col gap-8 ${activeView === 'setup' ? 'flex' : 'hidden'} lg:flex`}>
-            {showWelcomeBanner && !computation && (
-              <WelcomeBanner onDismiss={handleDismissWelcomeBanner} />
-            )}
-            {challengeMode && (
-              <ChallengeBanner
-                challengerName={challengeMode.challengerName}
-                targetCalories={challengeMode.targetCalories}
-                currentCalories={currentTotalCalories}
-                onDismiss={() => setChallengeMode(null)}
-              />
-            )}
-            <FoodInputList
-              foods={scenario.foods}
-              onUpdateFood={updateFood}
-              onRemoveFood={removeFood}
-              onOpenCameraForIndex={handleOpenCameraForIndex}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                id="add-manual-button"
-                onClick={addFood}
-                disabled={isFoodLimitReached}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
-              >
-                <PlusIcon />
-                Manual
-              </button>
-              <button
-                onClick={() => setIsDbModalOpen(true)}
-                disabled={isFoodLimitReached}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
-              >
-                <DatabaseIcon />
-                Database
-              </button>
-              <div className="relative group">
-                <button
-                  onClick={() => setIsCameraModalOpen(true)}
-                  disabled={isFoodLimitReached}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
-                  aria-describedby="ai-tooltip"
-                >
-                  <CameraIcon />
-                  With AI
-                </button>
-                <div
-                    id="ai-tooltip"
-                    role="tooltip"
-                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2.5 bg-zinc-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none invisible group-hover:visible"
-                >
-                    <div className="flex items-center gap-2">
-                        <LightbulbIcon className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                        <span>Tip: You can scan your whole plate at once!</span>
-                    </div>
-                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-700"></div>
-                </div>
-              </div>
-               <button
-                onClick={() => setIsGalleryModalOpen(true)}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
-              >
-                <HistoryIcon />
-                History
-              </button>
-            </div>
-            {isFoodLimitReached && (
-              <p className="text-center text-sm text-zinc-500 -mt-4">
-                Maximum of {MAX_FOOD_ITEMS} food items reached.
-              </p>
-            )}
-            <div id="user-input-card">
-                <UserInputCard
-                user={scenario.user}
-                preferences={scenario.preferences}
-                activities={allActivities}
-                onUserChange={handleUserChange}
-                onPreferencesChange={(key, value) => setScenario(prev => ({ ...prev, preferences: { ...prev.preferences, [key]: value }}))}
-                onCustomActivitiesChange={handleCustomActivitiesChange}
-                isAuthenticated={isAuthenticated}
-                onLoginClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
-                />
-            </div>
-            <OptionsCard
-              options={scenario.options}
-              onOptionChange={(key, value) => setScenario({ ...scenario, options: { ...scenario.options, [key]: value } })}
-            />
-            <GamificationDashboard profile={profile} onViewRewardsClick={() => setIsRewardsModalOpen(true)} />
-            {/* Desktop Buttons */}
-            <div className="hidden lg:flex flex-col gap-4">
-               <button
-                  onClick={handleReset}
-                  disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-transparent border-2 border-zinc-600 rounded-xl hover:border-amber-400 hover:text-amber-400 transition-colors duration-200 text-zinc-400 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="Reset all inputs"
-                  title="Reset to default values"
-                >
-                  <ResetIcon className="w-5 h-5" />
-                  Reset Inputs
-                </button>
-               <button
-                id="calculate-button-desktop"
-                onClick={handleCalculate}
-                disabled={isLoading}
-                className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-zinc-800 border-2 border-amber-400 text-amber-400 font-bold text-lg rounded-xl shadow-lg shadow-amber-500/10 hover:bg-amber-400 hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:bg-zinc-800 disabled:text-amber-400/50 disabled:border-amber-400/50 transition-all duration-300 group"
-              >
-                {isLoading ? (
-                  <>
-                    <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <ChartLineIcon className="w-6 h-6 text-amber-400 group-hover:text-zinc-900 transition-colors duration-300" />
-                    Calculate Reality Check
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Output Column */}
-          <div className={`${activeView === 'results' ? 'block' : 'hidden'} lg:block relative`}>
-            <div className="lg:sticky lg:top-8">
-              {error && <div className="bg-red-500/20 border border-red-500/50 text-red-400 p-4 rounded-xl mb-4 animate-pulse">{error}</div>}
-              {isLoading ? (
-                 <LoadingAnalysis userName={scenario.user.name} />
-              ) : computation ? (
-                <ResultsDisplay 
-                    computation={computation} 
-                    user={scenario.user}
-                    onGamificationUpdate={handleGamificationUpdate}
-                />
-              ) : (
-                <PreCalculationDashboard
-                    user={scenario.user}
-                    totalCalories={currentTotalCalories}
-                    itemCount={scenario.foods.length}
-                    activityLabel={selectedActivityLabel}
+        
+        {activeView === 'dashboard' ? (
+          <DashboardView profile={profile} />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            {/* Input Column */}
+            <div className={`flex-col gap-8 ${activeView === 'setup' ? 'flex' : 'hidden'} lg:flex`}>
+              {showWelcomeBanner && !computation && (
+                <WelcomeBanner onDismiss={handleDismissWelcomeBanner} />
+              )}
+              {challengeMode && (
+                <ChallengeBanner
+                  challengerName={challengeMode.challengerName}
+                  targetCalories={challengeMode.targetCalories}
+                  currentCalories={currentTotalCalories}
+                  onDismiss={() => setChallengeMode(null)}
                 />
               )}
+              {!scenario.user.primary_challenge ? (
+                  <ChallengeSelectionCard onSelect={handleChallengeSelect} />
+              ) : (
+                <>
+                  <FoodInputList
+                    foods={scenario.foods}
+                    onUpdateFood={updateFood}
+                    onRemoveFood={removeFood}
+                    onOpenCameraForIndex={handleOpenCameraForIndex}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      id="add-manual-button"
+                      onClick={addFood}
+                      disabled={isFoodLimitReached}
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
+                    >
+                      <PlusIcon />
+                      Manual
+                    </button>
+                    <button
+                      onClick={() => setIsDbModalOpen(true)}
+                      disabled={isFoodLimitReached}
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
+                    >
+                      <DatabaseIcon />
+                      Database
+                    </button>
+                    <div className="relative group">
+                      <button
+                        onClick={() => {
+                          setCameraTargetIndex(null);
+                          setIsCameraModalOpen(true);
+                        }}
+                        disabled={isFoodLimitReached}
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
+                        aria-describedby="ai-tooltip"
+                      >
+                        <CameraIcon />
+                        With AI
+                      </button>
+                      <div
+                          id="ai-tooltip"
+                          role="tooltip"
+                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2.5 bg-zinc-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none invisible group-hover:visible"
+                      >
+                          <div className="flex items-center gap-2">
+                              <LightbulbIcon className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                              <span>Tip: You can scan your whole plate at once!</span>
+                          </div>
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-700"></div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setIsGalleryModalOpen(true)}
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"
+                    >
+                      <HistoryIcon />
+                      History
+                    </button>
+                  </div>
+                  {isFoodLimitReached && (
+                    <p className="text-center text-sm text-zinc-500 -mt-4">
+                      Maximum of {MAX_FOOD_ITEMS} food items reached.
+                    </p>
+                  )}
+                  <div id="user-input-card">
+                      <UserInputCard
+                      user={scenario.user}
+                      preferences={scenario.preferences}
+                      activities={allActivities}
+                      onUserChange={handleUserChange}
+                      onPreferencesChange={(key, value) => setScenario(prev => ({ ...prev, preferences: { ...prev.preferences, [key]: value }}))}
+                      onCustomActivitiesChange={handleCustomActivitiesChange}
+                      isAuthenticated={isAuthenticated}
+                      onLoginClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
+                      />
+                  </div>
+                  <OptionsCard
+                    options={scenario.options}
+                    onOptionChange={(key, value) => setScenario({ ...scenario, options: { ...scenario.options, [key]: value } })}
+                  />
+                  <GamificationDashboard profile={profile} onViewRewardsClick={() => setIsRewardsModalOpen(true)} />
+                  {/* Desktop Buttons */}
+                  <div className="hidden lg:flex flex-col gap-4">
+                    <button
+                        onClick={handleReset}
+                        disabled={isLoading}
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-transparent border-2 border-zinc-600 rounded-xl hover:border-amber-400 hover:text-amber-400 transition-colors duration-200 text-zinc-400 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Reset all inputs"
+                        title="Reset to default values"
+                      >
+                        <ResetIcon className="w-5 h-5" />
+                        Reset Inputs
+                      </button>
+                    <button
+                      id="calculate-button-desktop"
+                      onClick={handleCalculate}
+                      disabled={isLoading}
+                      className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-zinc-800 border-2 border-amber-400 text-amber-400 font-bold text-lg rounded-xl shadow-lg shadow-amber-500/10 hover:bg-amber-400 hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:bg-zinc-800 disabled:text-amber-400/50 disabled:border-amber-400/50 transition-all duration-300 group"
+                    >
+                      {isLoading ? (
+                        <>
+                          <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <ChartLineIcon className="w-6 h-6 text-amber-400 group-hover:text-zinc-900 transition-colors duration-300" />
+                          Calculate Reality Check
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Output Column */}
+            <div className={`${activeView === 'results' ? 'block' : 'hidden'} lg:block relative`}>
+              <div className="lg:sticky lg:top-8 flex flex-col gap-6">
+                <HealthFactCard />
+                {error && <div className="bg-red-500/20 border border-red-500/50 text-red-400 p-4 rounded-xl mb-4 animate-pulse">{error}</div>}
+                {isLoading ? (
+                  <LoadingAnalysis userName={scenario.user.name} />
+                ) : computation ? (
+                  <ResultsDisplay 
+                      computation={computation} 
+                      user={scenario.user}
+                      onGamificationUpdate={handleGamificationUpdate}
+                  />
+                ) : (
+                  <PreCalculationDashboard
+                      user={scenario.user}
+                      totalCalories={currentTotalCalories}
+                      itemCount={scenario.foods.length}
+                      activityLabel={selectedActivityLabel}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
       <section className="container mx-auto px-4">
         <SubscriptionCard />
@@ -607,7 +660,9 @@ const App: React.FC = () => {
       <BottomNavBar 
         activeView={activeView}
         setActiveView={setActiveView}
+        handleDashboardClick={handleDashboardClick}
         isResultsDisabled={!computation && !isLoading}
+        isDashboardDisabled={!isAuthenticated}
       />
       {/* --- End Mobile UI Elements --- */}
 
@@ -617,6 +672,11 @@ const App: React.FC = () => {
         onAuthSuccess={handleAuthSuccess}
         initialMode={authMode}
         onSwitchMode={setAuthMode}
+      />
+
+      <UpgradeModal
+          isOpen={isUpgradeModalOpen}
+          onClose={() => setIsUpgradeModalOpen(false)}
       />
 
       {isDbModalOpen && (

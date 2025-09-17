@@ -1,3 +1,4 @@
+
 import { User } from '../types';
 
 const LOGGED_IN_USER_KEY = 'loggedInUserEmail';
@@ -36,8 +37,10 @@ export const signUp = (newUser: User): User => {
         throw new Error('An account with this email already exists.');
     }
 
+    // Assign subscription tier. Dev Cheat: include '+premium' in email for premium access.
+    newUser.subscriptionTier = newUser.email.includes('+premium') ? 'premium' : 'free';
+
     // In a real app, you would hash the password here.
-    // For this mock, we'll just store it.
     users.push(newUser);
     saveUsers(users);
 

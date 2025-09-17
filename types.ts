@@ -1,10 +1,4 @@
 
-
-
-
-
-
-
 export interface User {
   // FIX: Allow name to be null for guest users.
   name: string | null;
@@ -14,6 +8,8 @@ export interface User {
   height_cm: number | null;
   sex: string | null;
   age: number | null;
+  subscriptionTier: 'free' | 'premium';
+  primary_challenge: string | null;
 }
 
 export interface CustomActivity {
@@ -29,6 +25,7 @@ export interface Preferences {
   pace_override: number | null;
   steps_per_mile: number;
   weight_unit: 'kg' | 'lbs';
+  height_unit: 'cm' | 'ft_in';
   custom_activities: CustomActivity[];
 }
 

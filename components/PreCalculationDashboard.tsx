@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { User } from '../types';
-import { LightbulbIcon, FlameIcon, CutleryIcon, StepIcon, ScaleIcon } from './Icons';
+import { FlameIcon, CutleryIcon, StepIcon, ScaleIcon, ChartLineIcon } from './Icons';
 
 interface PreCalculationDashboardProps {
     user: User;
@@ -9,20 +9,8 @@ interface PreCalculationDashboardProps {
     activityLabel: string;
 }
 
-const healthFacts = [
-    "Staying hydrated can boost your metabolism by up to 30%.",
-    "A single can of soda can contain up to 10 teaspoons of sugar.",
-    "Laughing for 15 minutes can burn up to 40 calories.",
-    "Your brain uses about 20% of the calories you consume.",
-    "Getting enough sleep is crucial for weight management and appetite control.",
-    "Fiber-rich foods like oats and beans keep you feeling full longer.",
-    "Strength training builds muscle, which burns more calories at rest than fat.",
-    "Walking is one of the most effective and accessible forms of exercise.",
-    "Eating protein at breakfast can reduce cravings throughout the day."
-];
-
 const LiveMetric: React.FC<{ value: string | number; label: string; icon: React.ReactNode; keyVal: any; valueClassName?: string }> = ({ value, label, icon, keyVal, valueClassName="text-white" }) => (
-    <div key={keyVal} className="bg-zinc-900 p-3 rounded-xl text-center animate-pulse-quick">
+    <div key={keyVal} className="bg-zinc-900 p-3 rounded-xl text-center">
         {icon}
         <p className={`text-xl font-bold truncate ${valueClassName}`}>{value}</p>
         <p className="text-xs text-zinc-400">{label}</p>
@@ -31,20 +19,6 @@ const LiveMetric: React.FC<{ value: string | number; label: string; icon: React.
 
 
 const PreCalculationDashboard: React.FC<PreCalculationDashboardProps> = ({ user, totalCalories, itemCount, activityLabel }) => {
-    const [factIndex, setFactIndex] = useState(() => Math.floor(Math.random() * healthFacts.length));
-    const [isFactVisible, setIsFactVisible] = useState(true);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setIsFactVisible(false); // Start fade out
-            setTimeout(() => {
-                setFactIndex(prev => (prev + 1) % healthFacts.length);
-                setIsFactVisible(true); // Start fade in
-            }, 300); // Duration of fade-out transition
-        }, 6000); // Change fact every 6 seconds
-        return () => clearInterval(interval);
-    }, []);
-
     const bmiData = useMemo(() => {
         if (user.weight_kg && user.height_cm && user.weight_kg > 0 && user.height_cm > 0) {
             const heightInMeters = user.height_cm / 100;
@@ -71,25 +45,20 @@ const PreCalculationDashboard: React.FC<PreCalculationDashboardProps> = ({ user,
     }, [user.weight_kg, user.height_cm]);
 
     return (
-        <div className="w-full h-full flex flex-col gap-6 p-6 animate-pop-in">
-            <div className="bg-amber-400/10 p-4 rounded-xl border border-amber-400/20">
-                <div className="flex items-start gap-3">
-                    <LightbulbIcon className="w-6 h-6 text-amber-400 flex-shrink-0 mt-1" />
-                    <div>
-                        <h4 className="font-bold text-amber-300">Did you know?</h4>
-                        <p className={`text-sm text-zinc-300 transition-opacity duration-300 ${isFactVisible ? 'opacity-100' : 'opacity-0'}`}>
-                            {healthFacts[factIndex]}
-                        </p>
-                    </div>
+        <div className="bg-zinc-800/50 p-6 rounded-2xl border border-zinc-700/50 flex flex-col h-full min-h-[500px] animate-pop-in">
+            <div className="flex-grow flex flex-col items-center justify-center text-center">
+                <div className="p-4 bg-zinc-700/30 rounded-full animate-pulse">
+                    <ChartLineIcon className="w-24 h-24 text-amber-400" />
                 </div>
+                <h2 className="mt-6 text-3xl font-bold text-white">Your Results Await</h2>
+                <p className="mt-2 text-zinc-400 max-w-sm">
+                    Add foods, personalize your profile, then hit 'Calculate' to get your Reality Check.
+                </p>
             </div>
 
-            <div className="bg-zinc-800/50 p-6 rounded-2xl border border-zinc-700/50 flex-grow">
-                 <h2 className="text-2xl font-bold text-white mb-4">
-                    Hello, <span className="text-amber-400">{user.name || 'there'}</span>!
-                </h2>
-                <h3 className="text-lg font-semibold text-zinc-300 mb-3">Live Metrics</h3>
-                <div className="grid grid-cols-2 gap-4">
+            <div>
+                <h3 className="text-lg font-semibold text-zinc-300 mb-4 text-center border-t border-zinc-700 pt-4">Live Metrics</h3>
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <LiveMetric 
                         keyVal={totalCalories} 
                         value={totalCalories.toLocaleString()} 

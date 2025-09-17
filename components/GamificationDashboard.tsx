@@ -2,7 +2,7 @@ import React from 'react';
 import { GamificationProfile, AchievementKey } from '../types';
 import { ACHIEVEMENTS } from '../constants';
 import { SparklesIcon, FlameIcon, StepIcon, HeartIcon, TargetIcon, RobotIcon, CalendarIcon, GiftIcon } from './Icons';
-import LeaderboardCard from './LeaderboardCard';
+import LeaderboardMarquee from './LeaderboardMarquee';
 
 interface GamificationDashboardProps {
   profile: GamificationProfile;
@@ -75,7 +75,7 @@ const GamificationDashboard: React.FC<GamificationDashboardProps> = ({ profile, 
         </div>
       </div>
 
-      <LeaderboardCard profile={profile} />
+      <LeaderboardMarquee profile={profile} />
     </div>
   );
 };

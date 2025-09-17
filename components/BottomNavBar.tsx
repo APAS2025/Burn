@@ -1,16 +1,20 @@
+
 import React from 'react';
-import { ChartLineIcon, PencilIcon } from './Icons';
+import { ChartLineIcon, PencilIcon, DashboardIcon } from './Icons';
 
 interface BottomNavBarProps {
-    activeView: 'setup' | 'results';
-    setActiveView: (view: 'setup' | 'results') => void;
+    activeView: 'setup' | 'results' | 'dashboard';
+    setActiveView: (view: 'setup' | 'results' | 'dashboard') => void;
+    handleDashboardClick: () => void;
     isResultsDisabled: boolean;
+    isDashboardDisabled: boolean;
 }
 
-const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeView, setActiveView, isResultsDisabled }) => {
+const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeView, setActiveView, handleDashboardClick, isResultsDisabled, isDashboardDisabled }) => {
     const navItems = [
-        { view: 'setup' as const, label: 'Setup', icon: <PencilIcon /> },
-        { view: 'results' as const, label: 'Results', icon: <ChartLineIcon />, disabled: isResultsDisabled },
+        { view: 'setup' as const, label: 'Setup', icon: <PencilIcon />, onClick: () => setActiveView('setup'), disabled: false },
+        { view: 'dashboard' as const, label: 'Dashboard', icon: <DashboardIcon />, onClick: handleDashboardClick, disabled: isDashboardDisabled },
+        { view: 'results' as const, label: 'Results', icon: <ChartLineIcon />, onClick: () => setActiveView('results'), disabled: isResultsDisabled },
     ];
 
     return (
@@ -19,7 +23,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeView, setActiveView, 
                 {navItems.map(item => (
                     <button
                         key={item.view}
-                        onClick={() => setActiveView(item.view)}
+                        onClick={item.onClick}
                         disabled={item.disabled}
                         className={`flex flex-col items-center justify-center w-24 h-full text-xs font-medium transition-colors duration-200 ${
                             activeView === item.view ? 'text-amber-400' : 'text-zinc-400 hover:text-zinc-200'

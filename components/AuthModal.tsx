@@ -58,6 +58,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
           height_cm: null,
           sex: null,
           age: null,
+          // FIX: Add missing 'subscriptionTier' property to conform to the User type.
+          subscriptionTier: 'free',
+          // FIX: Add missing 'primary_challenge' property to conform to the User type.
+          primary_challenge: null,
         };
         const createdUser = authService.signUp(newUser);
         onAuthSuccess(createdUser);

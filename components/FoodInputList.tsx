@@ -1,12 +1,12 @@
-
 import React from 'react';
 import { FoodItem } from '../types';
-import { TrashIcon } from './Icons';
+import { TrashIcon, CameraIcon } from './Icons';
 
 interface FoodInputListProps {
   foods: FoodItem[];
   onUpdateFood: (index: number, food: FoodItem) => void;
   onRemoveFood: (index: number) => void;
+  onOpenCameraForIndex: (index: number) => void;
 }
 
 const FoodInputCard: React.FC<{
@@ -14,7 +14,8 @@ const FoodInputCard: React.FC<{
   index: number;
   onUpdate: (food: FoodItem) => void;
   onRemove: () => void;
-}> = ({ food, index, onUpdate, onRemove }) => {
+  onOpenCamera: () => void;
+}> = ({ food, index, onUpdate, onRemove, onOpenCamera }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     let newFood = { ...food };
@@ -50,15 +51,26 @@ const FoodInputCard: React.FC<{
       <div className="grid grid-cols-6 gap-x-4 gap-y-3">
         <div className="col-span-6">
           <label htmlFor={`name-${index}`} className="block text-sm font-medium text-zinc-400 mb-1">Name</label>
-          <input
-            type="text"
-            id={`name-${index}`}
-            name="name"
-            value={food.name}
-            onChange={handleChange}
-            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-2 px-3 text-white placeholder-zinc-500 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition"
-            placeholder="Cookie"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              id={`name-${index}`}
+              name="name"
+              value={food.name}
+              onChange={handleChange}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-2 pl-3 pr-10 text-white placeholder-zinc-500 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition"
+              placeholder="Cookie or use AI camera ->"
+            />
+            <button
+              type="button"
+              onClick={onOpenCamera}
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-amber-400 transition-colors"
+              aria-label="Analyze food with camera"
+              title="Analyze with AI Camera"
+            >
+              <CameraIcon className="w-5 h-5" />
+            </button>
+          </div>
         </div>
         <div className="col-span-6">
           <label htmlFor={`serving_label-${index}`} className="block text-sm font-medium text-zinc-400 mb-1">Serving</label>
@@ -121,7 +133,7 @@ const FoodInputCard: React.FC<{
 };
 
 
-const FoodInputList: React.FC<FoodInputListProps> = ({ foods, onUpdateFood, onRemoveFood }) => {
+const FoodInputList: React.FC<FoodInputListProps> = ({ foods, onUpdateFood, onRemoveFood, onOpenCameraForIndex }) => {
   return (
     <div className="space-y-4">
       {foods.map((food, index) => (
@@ -131,6 +143,7 @@ const FoodInputList: React.FC<FoodInputListProps> = ({ foods, onUpdateFood, onRe
           index={index}
           onUpdate={(updatedFood) => onUpdateFood(index, updatedFood)}
           onRemove={() => onRemoveFood(index)}
+          onOpenCamera={() => onOpenCameraForIndex(index)}
         />
       ))}
     </div>

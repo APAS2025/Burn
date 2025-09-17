@@ -1,9 +1,10 @@
 import React, { useState, forwardRef } from 'react';
-import { ComputationItem, FoodItem, SwapItem } from '../types';
-import { HeartIcon, XIcon, PlusIcon, DatabaseIcon, CameraIcon, CutleryIcon, FlameIcon } from './Icons';
+import { ComputationItem, FoodItem, SwapItem, Computation } from '../types';
+import { HeartIcon, XIcon, PlusIcon, DatabaseIcon, CameraIcon, CutleryIcon, FlameIcon, LightbulbIcon } from './Icons';
 
 interface ResultItemCardProps {
   item: ComputationItem;
+  options: Computation['options'];
   swappedItem: SwapItem | null;
   onAddSwap: (food: FoodItem) => void;
   onRemoveSwap: () => void;
@@ -30,8 +31,9 @@ const StatDisplay: React.FC<{ icon: React.ReactNode, value: string, label: strin
     </div>
 );
 
-const ResultItemCard = forwardRef<HTMLDivElement, ResultItemCardProps>(({ item, swappedItem, onAddSwap, onRemoveSwap, onRequestSwapFromDB, onRequestSwapFromCamera, isHighlighted }, ref) => {
+const ResultItemCard = forwardRef<HTMLDivElement, ResultItemCardProps>(({ item, options, swappedItem, onAddSwap, onRemoveSwap, onRequestSwapFromDB, onRequestSwapFromCamera, isHighlighted }, ref) => {
     const [isSwapUIOpen, setIsSwapUIOpen] = useState(false);
+    const [isEducationOpen, setIsEducationOpen] = useState(false);
     const [manualSwap, setManualSwap] = useState({ name: '', calories_kcal: '' });
 
     const handleManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,6 +104,49 @@ const ResultItemCard = forwardRef<HTMLDivElement, ResultItemCardProps>(({ item, 
                         <StatDisplay icon={<CutleryIcon className="w-5 h-5 text-amber-400" />} value={formatMinutes(item.eat_minutes)} label="Time to Eat" valueClassName="text-amber-400" />
                         <StatDisplay icon={<FlameIcon className="w-5 h-5 text-red-400" />} value={formatMinutes(item.burn_minutes)} label="Time to Burn" valueClassName="text-red-400" />
                     </div>
+                    {options.include_shock_factor && (
+                        <div className="mt-4 pt-4 border-t border-zinc-700/60">
+                            <p className="text-xs text-amber-400 font-semibold mb-3 text-center tracking-wider">SHOCK FACTOR</p>
+                            <div className="grid grid-cols-2 gap-4 text-center">
+                                <div className="bg-zinc-700/50 p-3 rounded-lg">
+                                    <p className="text-xl font-extrabold text-white">{item.shock_factor.calories_kcal.toLocaleString()}</p>
+                                    <p className="text-xs text-zinc-400">Total Calories ({item.shock_factor.servings_multiplier}x)</p>
+                                </div>
+                                <div className="bg-zinc-700/50 p-3 rounded-lg">
+                                    <p className="text-xl font-extrabold text-red-400">{formatMinutes(item.shock_factor.burn_minutes)}</p>
+                                    <p className="text-xs text-zinc-400">Burn Time ({item.shock_factor.servings_multiplier}x)</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {options.include_education && item.education?.suggested_swap && (
+                        <>
+                            <div className="mt-4 border-t border-zinc-700/80 pt-4">
+                                <button
+                                    onClick={() => setIsEducationOpen(!isEducationOpen)}
+                                    className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-zinc-700/50 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition-colors text-amber-400 font-semibold"
+                                    aria-expanded={isEducationOpen}
+                                >
+                                    <LightbulbIcon />
+                                    Educational Insight
+                                </button>
+                            </div>
+                            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isEducationOpen ? 'max-h-96 mt-4' : 'max-h-0'}`}>
+                                <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-700/50">
+                                    <p className="text-sm">
+                                        <strong className="text-zinc-300">Satiety Flag:</strong>
+                                        <span className="ml-2 text-zinc-400">{item.education.satiety_flag}</span>
+                                    </p>
+                                    <p className="text-sm mt-2">
+                                        <strong className="text-zinc-300">Healthier Swap Suggestion:</strong>
+                                        <span className="ml-2 text-zinc-400">{item.education.suggested_swap}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                    
                     <div className="mt-4 border-t border-zinc-700/80 pt-4">
                         <button
                             onClick={() => setIsSwapUIOpen(!isSwapUIOpen)}

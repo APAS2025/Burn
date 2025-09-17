@@ -137,7 +137,7 @@ export async function getCalorieAnalysis(scenario: Scenario): Promise<Computatio
 - If weight is missing, use default 75 kg. If activity is missing, use 'walking_3_mph'.
 - Calculate steps: if speed_mph is available, use it. Otherwise, use the fallback: \`100 kcal ≈ 2000 steps\`.
 - Populate all fields in the provided JSON schema. Crucially, you must also return the original \`options\` object from the input \`Scenario\`.
-- Include a “shareable_card_text” string for each food and the total, starting with "My Enzark Reality Check:".
+- Include a “shareable_card_text” string for each food and the total. It should start with "My Enzark Reality Check:" and summarize the key findings. If the user's name is provided in \`scenario.user.name\`, you must include it in the text. Also mention the activity used for the calculation.
 - Your entire response MUST be a single JSON object matching the schema.
 
 **Markdown Report Generation:**

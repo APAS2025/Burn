@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Computation, User, FoodItem, SwapItem } from '../types';
-import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, DownloadIcon, MailIcon } from './Icons';
+import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, DownloadIcon, MailIcon, TwitterIcon } from './Icons';
 import ReportCharts from './ReportCharts';
 import EnzarkLogo from './EnzarkLogo';
 import ResultItemCard from './ResultItemCard';
@@ -243,6 +243,12 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
     }
     setEmail(e.target.value);
   }
+  
+  const handleTwitterShare = () => {
+    const textToShare = totals.shareable_card_text;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(textToShare)}`;
+    window.open(twitterUrl, '_blank', 'noopener,noreferrer');
+  };
 
   const emailInputClasses = `flex-grow bg-zinc-800 border rounded-lg py-3 px-4 text-white placeholder-zinc-500 focus:ring-2 focus:border-amber-400 transition ${
     emailError
@@ -259,6 +265,13 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
                     <EnzarkLogo />
                     <div className="flex items-center gap-2">
                         <ShareButton text={totals.shareable_card_text} />
+                         <button
+                            onClick={handleTwitterShare}
+                            className="flex items-center justify-center p-2 bg-[#1DA1F2] hover:bg-[#1A91DA] text-white font-semibold rounded-lg transition-colors"
+                            title="Share on Twitter"
+                        >
+                            <TwitterIcon className="w-5 h-5" />
+                        </button>
                         <ChallengeShareButton 
                             totalCalories={totals.calories_kcal}
                             challengerName={user.name}
@@ -354,6 +367,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
                           ref={el => { resultItemRefs.current[index] = el; }}
                           isHighlighted={index === highlightedItemIndex}
                           item={item}
+                          options={options}
                           swappedItem={swappedItems[index]}
                           onAddSwap={(food) => handleAddSwap(index, food)}
                           onRemoveSwap={() => handleRemoveSwap(index)}

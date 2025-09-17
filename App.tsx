@@ -83,6 +83,7 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<GamificationProfile>(storageService.getGamificationProfile());
   const [challengeMode, setChallengeMode] = useState<ChallengeMode | null>(null);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(!localStorage.getItem('onboardingCompleted'));
+  const [cameraTargetIndex, setCameraTargetIndex] = useState<number | null>(null);
 
 
   useEffect(() => {
@@ -193,20 +194,29 @@ const App: React.FC = () => {
     setScenario({ ...scenario, foods: [...scenario.foods, food] });
   };
 
-  const addFoodsFromAnalysis = (newFoods: FoodItem[]) => {
-    const availableSlots = MAX_FOOD_ITEMS - scenario.foods.length;
-    if (availableSlots <= 0) {
-      alert(`Cannot add more food items. The maximum of ${MAX_FOOD_ITEMS} has been reached.`);
-      return;
-    }
-    const foodsToAdd = newFoods.slice(0, availableSlots);
-    if (newFoods.length > availableSlots) {
-      alert(`Only ${foodsToAdd.length} food item(s) could be added to stay within the ${MAX_FOOD_ITEMS} item limit.`);
-    }
-
-    if (foodsToAdd.length > 0) {
-      setScenario(prev => ({ ...prev, foods: [...prev.foods, ...foodsToAdd] }));
-      handleGamificationUpdate('AI_ANALYSIS');
+  const handleFoodsFromAnalysis = (newFoods: FoodItem[]) => {
+    if (cameraTargetIndex !== null) {
+      // If we're targeting a specific input, update it.
+      if (newFoods.length > 0) {
+        // Use the first identified food to update the existing item.
+        updateFood(cameraTargetIndex, newFoods[0]);
+        handleGamificationUpdate('AI_ANALYSIS');
+      }
+    } else {
+      // Otherwise, add the new foods to the list.
+      const availableSlots = MAX_FOOD_ITEMS - scenario.foods.length;
+      if (availableSlots <= 0) {
+        alert(`Cannot add more food items. The maximum of ${MAX_FOOD_ITEMS} has been reached.`);
+        return;
+      }
+      const foodsToAdd = newFoods.slice(0, availableSlots);
+      if (newFoods.length > availableSlots) {
+        alert(`Only ${foodsToAdd.length} food item(s) could be added to stay within the ${MAX_FOOD_ITEMS} item limit.`);
+      }
+      if (foodsToAdd.length > 0) {
+        setScenario(prev => ({ ...prev, foods: [...prev.foods, ...foodsToAdd] }));
+        handleGamificationUpdate('AI_ANALYSIS');
+      }
     }
   };
 
@@ -293,6 +303,11 @@ const App: React.FC = () => {
     }));
   };
 
+  const handleOpenCameraForIndex = (index: number) => {
+    setCameraTargetIndex(index);
+    setIsCameraModalOpen(true);
+  };
+
   const allActivities = useMemo(() => {
     const defaultActivities = Object.entries(ACTIVITY_LIBRARY).map(([key, value]) => ({ key, ...value }));
     return {
@@ -351,6 +366,7 @@ const App: React.FC = () => {
               foods={scenario.foods}
               onUpdateFood={updateFood}
               onRemoveFood={removeFood}
+              onOpenCameraForIndex={handleOpenCameraForIndex}
             />
             <div className="grid grid-cols-2 gap-4">
               <button
@@ -526,8 +542,9 @@ const App: React.FC = () => {
           onClose={() => {
             setIsCameraModalOpen(false);
             setReanalyzingImage(null);
+            setCameraTargetIndex(null); // Reset the target index
           }}
-          onAddFoods={addFoodsFromAnalysis}
+          onAddFoods={handleFoodsFromAnalysis}
           defaultEatMinutes={scenario.preferences.default_eat_minutes}
           onImageAnalyzed={handleImageAnalyzed}
           initialImage={reanalyzingImage}

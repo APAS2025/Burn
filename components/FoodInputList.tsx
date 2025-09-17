@@ -1,6 +1,6 @@
 import React from 'react';
 import { FoodItem } from '../types';
-import { TrashIcon, CameraIcon } from './Icons';
+import { TrashIcon, CameraIcon, LightbulbIcon } from './Icons';
 
 interface FoodInputListProps {
   foods: FoodItem[];
@@ -61,15 +61,28 @@ const FoodInputCard: React.FC<{
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-2 pl-3 pr-10 text-white placeholder-zinc-500 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition"
               placeholder="Cookie or use AI camera ->"
             />
-            <button
-              type="button"
-              onClick={onOpenCamera}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-amber-400 transition-colors"
-              aria-label="Analyze food with camera"
-              title="Analyze with AI Camera"
-            >
-              <CameraIcon className="w-5 h-5" />
-            </button>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group">
+              <button
+                type="button"
+                onClick={onOpenCamera}
+                className="text-zinc-400 hover:text-amber-400 transition-colors"
+                aria-label="Analyze food with camera"
+                aria-describedby={`camera-tooltip-${index}`}
+              >
+                <CameraIcon className="w-5 h-5" />
+              </button>
+              <div
+                id={`camera-tooltip-${index}`}
+                role="tooltip"
+                className="absolute bottom-full right-1/2 translate-x-1/2 mb-2 w-max max-w-xs p-2.5 bg-zinc-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none invisible group-hover:visible"
+              >
+                  <div className="flex items-center gap-2">
+                      <LightbulbIcon className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                      <span>Tip: You can scan your whole plate!</span>
+                  </div>
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-700"></div>
+              </div>
+            </div>
           </div>
         </div>
         <div className="col-span-6">

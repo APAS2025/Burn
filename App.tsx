@@ -9,7 +9,7 @@ import OptionsCard from './components/OptionsCard';
 import ResultsDisplay from './components/ResultsDisplay';
 import FoodDatabaseModal from './components/FoodDatabaseModal';
 import CameraAnalysisModal from './components/CameraAnalysisModal';
-import { PlusIcon, DatabaseIcon, CameraIcon, ChartLineIcon, ResetIcon, HistoryIcon, QuestionMarkCircleIcon } from './components/Icons';
+import { PlusIcon, DatabaseIcon, CameraIcon, ChartLineIcon, ResetIcon, HistoryIcon, QuestionMarkCircleIcon, LightbulbIcon } from './components/Icons';
 import LoadingAnalysis from './components/LoadingAnalysis';
 import EnzarkLogo from './components/EnzarkLogo';
 import ShareAppButton from './components/ShareAppButton';
@@ -386,14 +386,28 @@ const App: React.FC = () => {
                 <DatabaseIcon />
                 Database
               </button>
-              <button
-                onClick={() => setIsCameraModalOpen(true)}
-                disabled={isFoodLimitReached}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
-              >
-                <CameraIcon />
-                With AI
-              </button>
+              <div className="relative group">
+                <button
+                  onClick={() => setIsCameraModalOpen(true)}
+                  disabled={isFoodLimitReached}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-zinc-800 disabled:scale-100"
+                  aria-describedby="ai-tooltip"
+                >
+                  <CameraIcon />
+                  With AI
+                </button>
+                <div
+                    id="ai-tooltip"
+                    role="tooltip"
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2.5 bg-zinc-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none invisible group-hover:visible"
+                >
+                    <div className="flex items-center gap-2">
+                        <LightbulbIcon className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                        <span>Tip: You can scan your whole plate at once!</span>
+                    </div>
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-zinc-700"></div>
+                </div>
+              </div>
                <button
                 onClick={() => setIsGalleryModalOpen(true)}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors duration-200 text-amber-400 font-semibold transform hover:scale-[1.02]"

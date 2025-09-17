@@ -16,6 +16,8 @@ export const ACTIVITY_LIBRARY: ActivityLibrary = {
 export const getDefaultScenario = (): Scenario => ({
   user: {
     name: null,
+    // FIX: Add missing 'email' property to conform to the User type.
+    email: '',
     weight_kg: 75,
     height_cm: null,
     sex: null,

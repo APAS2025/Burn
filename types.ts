@@ -2,8 +2,14 @@
 
 
 
+
+
+
 export interface User {
+  // FIX: Allow name to be null for guest users.
   name: string | null;
+  email: string;
+  password?: string; // Only used for sign-up, not stored long-term
   weight_kg: number | null;
   height_cm: number | null;
   sex: string | null;

@@ -5,6 +5,7 @@ const insights = [
   { title: 'Top 5 Supplements You Should Take', icon: <PillIcon /> },
   { title: 'Good Fats vs. Bad Fats: The Real Story', icon: <AvocadoIcon /> },
   { title: 'Why You Must Get a DEXA Scan', icon: <BodyScanIcon /> },
+  { title: 'Time to take your vitamins and supplements', icon: <PillIcon /> },
   { title: 'What is a MET Value? (Exercise Intensity)', icon: <InfoIcon /> },
   { title: 'First Steps to Cleaning Up Your Pantry', icon: <PantryIcon /> },
   { title: 'Key Blood Work Markers to Understand', icon: <BloodDropIcon /> },

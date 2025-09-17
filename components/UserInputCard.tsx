@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, Preferences, CustomActivity } from '../types';
-import { CogIcon } from './Icons';
+import { CogIcon, MailIcon } from './Icons';
 import CustomActivityModal from './CustomActivityModal';
 
 interface UserInputCardProps {
@@ -13,6 +13,8 @@ interface UserInputCardProps {
   onUserChange: (user: User) => void;
   onPreferencesChange: <K extends keyof Preferences>(key: K, value: Preferences[K]) => void;
   onCustomActivitiesChange: (activities: CustomActivity[]) => void;
+  isAuthenticated: boolean;
+  onLoginClick: () => void;
 }
 
 const KG_TO_LBS = 2.20462;
@@ -46,7 +48,7 @@ const UnitToggle: React.FC<{
 };
 
 
-const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activities, onUserChange, onPreferencesChange, onCustomActivitiesChange }) => {
+const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activities, onUserChange, onPreferencesChange, onCustomActivitiesChange, isAuthenticated, onLoginClick }) => {
   const [displayWeight, setDisplayWeight] = useState<string>('');
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
 
@@ -119,11 +121,24 @@ const UserInputCard: React.FC<UserInputCardProps> = ({ user, preferences, activi
   
   return (
     <>
-    <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 border-t-amber-500/20">
+    <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 border-t-amber-500/20 relative">
+      {!isAuthenticated && (
+        <div className="absolute inset-0 bg-zinc-900/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4 rounded-xl animate-pop-in">
+          <MailIcon className="w-12 h-12 text-amber-400 mb-2" />
+          <p className="text-white font-bold text-lg text-center">Save Your Progress</p>
+          <p className="text-zinc-400 text-sm text-center mb-4">Sign up or log in to save your details for next time.</p>
+          <button 
+            onClick={onLoginClick}
+            className="py-2 px-5 bg-amber-400 text-zinc-900 font-bold rounded-full hover:bg-amber-300 transition-colors"
+          >
+            Sign Up / Login
+          </button>
+        </div>
+      )}
       <h3 className="text-xl font-bold text-white mb-4">Personalization</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="md:col-span-2">
-            <label htmlFor="name" className="block text-sm font-medium text-zinc-400 mb-1">Name (for PDF Report)</label>
+            <label htmlFor="name" className="block text-sm font-medium text-zinc-400 mb-1">Name</label>
             <input
                 type="text"
                 id="name"

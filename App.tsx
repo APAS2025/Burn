@@ -1,6 +1,6 @@
 // FIX: Import `useMemo` from React to resolve 'Cannot find name' error.
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { Scenario, FoodItem, Computation, CustomActivity, GamificationProfile, ChallengeMode, OnboardingStep } from './types';
+import { Scenario, FoodItem, Computation, CustomActivity, GamificationProfile, ChallengeMode, OnboardingStep, User } from './types';
 import { getDefaultScenario, ACTIVITY_LIBRARY } from './constants';
 import { getCalorieAnalysis } from './services/geminiService';
 import FoodInputList from './components/FoodInputList';
@@ -23,6 +23,10 @@ import * as storageService from './services/storageService';
 import BottomNavBar from './components/BottomNavBar';
 import WelcomeBanner from './components/WelcomeBanner';
 import PreCalculationDashboard from './components/PreCalculationDashboard';
+import * as authService from './services/authService';
+import AuthModal from './components/AuthModal';
+import UserProfile from './components/UserProfile';
+
 
 const MAX_FOOD_ITEMS = 10;
 
@@ -66,12 +70,7 @@ const onboardingSteps: OnboardingStep[] = [
 ];
 
 const App: React.FC = () => {
-  const [scenario, setScenario] = useState<Scenario>(() => {
-    const defaultScenario = getDefaultScenario();
-    const savedActivities = storageService.getCustomActivities();
-    defaultScenario.preferences.custom_activities = savedActivities;
-    return defaultScenario;
-  });
+  const [scenario, setScenario] = useState<Scenario>(getDefaultScenario);
   const [computation, setComputation] = useState<Computation | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +86,24 @@ const App: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState<boolean>(!localStorage.getItem('onboardingCompleted'));
   const [cameraTargetIndex, setCameraTargetIndex] = useState<number | null>(null);
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(!sessionStorage.getItem('welcomeBannerDismissed'));
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
 
+  const isAuthenticated = !!currentUser;
+
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+      setScenario(prev => ({...prev, user: { ...prev.user, ...user } }));
+    }
+     const savedActivities = storageService.getCustomActivities();
+     setScenario(prev => ({
+       ...prev,
+       preferences: { ...prev.preferences, custom_activities: savedActivities }
+     }));
+  }, []);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -164,6 +180,26 @@ const App: React.FC = () => {
     const { updatedProfile } = storageService.claimReward(rewardId);
     setProfile(updatedProfile);
   }, []);
+  
+  const handleAuthSuccess = (user: User) => {
+    setCurrentUser(user);
+    setScenario(prev => ({...prev, user: { ...prev.user, ...user } }));
+    setIsAuthModalOpen(false);
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    setCurrentUser(null);
+    setScenario(prev => ({ ...prev, user: getDefaultScenario().user }));
+  };
+  
+  const handleUserChange = (updatedUser: User) => {
+    setScenario({ ...scenario, user: updatedUser });
+    if (isAuthenticated) {
+        authService.updateUser(updatedUser);
+        setCurrentUser(updatedUser);
+    }
+  };
 
   const updateFood = (index: number, updatedFood: FoodItem) => {
     const newFoods = [...scenario.foods];
@@ -267,15 +303,22 @@ const App: React.FC = () => {
   }, [scenario, handleGamificationUpdate]);
 
   const handleReset = useCallback(() => {
-    const scenario = getDefaultScenario();
+    const defaultScenario = getDefaultScenario();
     // Keep custom activities on reset
-    scenario.preferences.custom_activities = storageService.getCustomActivities();
-    setScenario(scenario);
+    const savedActivities = storageService.getCustomActivities();
+    defaultScenario.preferences.custom_activities = savedActivities;
+
+    // Keep logged-in user's data
+    if (currentUser) {
+      defaultScenario.user = { ...defaultScenario.user, ...currentUser };
+    }
+    
+    setScenario(defaultScenario);
     setComputation(null);
     setError(null);
     setActiveView('setup');
     setChallengeMode(null);
-  }, []);
+  }, [currentUser]);
 
   const handleImageAnalyzed = (imageData: string) => {
     const newImages = storageService.addStoredImage(imageData);
@@ -347,14 +390,26 @@ const App: React.FC = () => {
       />
       <main className="container mx-auto px-4 py-8 md:py-12 pb-28 md:pb-12">
         <header className="text-center mb-12 relative pt-12 md:pt-16">
-           <button
-            onClick={restartOnboarding}
-            className="absolute top-4 right-4 text-zinc-500 hover:text-amber-400 transition-colors duration-200"
-            title="Show Tutorial"
-            aria-label="Show Tutorial"
-           >
-              <QuestionMarkCircleIcon className="w-8 h-8" />
-           </button>
+            <div className="absolute top-4 right-4 flex items-center gap-4">
+                {isAuthenticated ? (
+                    <UserProfile user={currentUser} onLogout={handleLogout} />
+                ) : (
+                    <button
+                        onClick={() => { setAuthMode('signup'); setIsAuthModalOpen(true); }}
+                        className="py-2 px-5 bg-amber-400 text-zinc-900 font-bold rounded-full hover:bg-amber-300 transition-colors"
+                    >
+                        Sign Up / Login
+                    </button>
+                )}
+                <button
+                    onClick={restartOnboarding}
+                    className="text-zinc-500 hover:text-amber-400 transition-colors duration-200"
+                    title="Show Tutorial"
+                    aria-label="Show Tutorial"
+                >
+                    <QuestionMarkCircleIcon className="w-8 h-8" />
+                </button>
+           </div>
           <p className="text-xl md:text-2xl text-zinc-300 font-medium tracking-wide mb-2">
             It all starts with a calorie...
           </p>
@@ -445,9 +500,11 @@ const App: React.FC = () => {
                 user={scenario.user}
                 preferences={scenario.preferences}
                 activities={allActivities}
-                onUserChange={(user) => setScenario({ ...scenario, user })}
+                onUserChange={handleUserChange}
                 onPreferencesChange={(key, value) => setScenario(prev => ({ ...prev, preferences: { ...prev.preferences, [key]: value }}))}
                 onCustomActivitiesChange={handleCustomActivitiesChange}
+                isAuthenticated={isAuthenticated}
+                onLoginClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
                 />
             </div>
             <OptionsCard
@@ -518,8 +575,11 @@ const App: React.FC = () => {
       <section className="container mx-auto px-4">
         <SubscriptionCard />
       </section>
-      <footer className="container mx-auto flex justify-center items-center py-6">
+      <footer className="container mx-auto flex flex-col items-center gap-4 text-center py-8 px-4">
         <EnzarkLogo />
+        <p className="text-xs text-zinc-500 max-w-2xl mx-auto">
+          Disclaimer: This application is for informational and educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
+        </p>
       </footer>
       <ShareAppButton />
       
@@ -550,6 +610,14 @@ const App: React.FC = () => {
         isResultsDisabled={!computation && !isLoading}
       />
       {/* --- End Mobile UI Elements --- */}
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+        initialMode={authMode}
+        onSwitchMode={setAuthMode}
+      />
 
       {isDbModalOpen && (
         <FoodDatabaseModal 

@@ -10,6 +10,7 @@ import * as storageService from '../services/storageService';
 import WeeklyChallengeCard from './WeeklyChallengeCard';
 import ChallengeShareButton from './ChallengeShareButton';
 import { addContactToGoHighLevel } from '../services/goHighLevelService';
+import UserMetricsCard from './UserMetricsCard';
 
 
 // Declarations for CDN libraries
@@ -354,6 +355,8 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
                     )}
                 </div>
             </section>
+            
+            <UserMetricsCard user={user} />
 
             <WeeklyChallengeCard progress={challengeProgress} goal={CHALLENGE_GOAL} />
             

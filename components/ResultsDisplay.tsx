@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Computation, User, FoodItem, SwapItem } from '../types';
-import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, DownloadIcon } from './Icons';
+import { ClipboardIcon, CheckIcon, WarningIcon, LightbulbIcon, DocumentTextIcon, XIcon, DownloadIcon, MailIcon } from './Icons';
 import ReportCharts from './ReportCharts';
 import EnzarkLogo from './EnzarkLogo';
 import ResultItemCard from './ResultItemCard';
@@ -9,6 +9,7 @@ import CameraAnalysisModal from './CameraAnalysisModal';
 import * as storageService from '../services/storageService';
 import WeeklyChallengeCard from './WeeklyChallengeCard';
 import ChallengeShareButton from './ChallengeShareButton';
+import { addContactToGoHighLevel } from '../services/goHighLevelService';
 
 
 // Declarations for CDN libraries
@@ -101,6 +102,12 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
   const [swappedItems, setSwappedItems] = useState<(SwapItem | null)[]>([]);
   const [swapModalState, setSwapModalState] = useState<{ index: number | null; type: 'db' | 'camera' | null }>({ index: null, type: null });
   const [challengeProgress, setChallengeProgress] = useState(0);
+  const [highlightedItemIndex, setHighlightedItemIndex] = useState<number | null>(null);
+  const resultItemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [emailCtaState, setEmailCtaState] = useState<'button' | 'form' | 'success'>('button');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
+  
   const CHALLENGE_GOAL = 750;
 
 
@@ -109,20 +116,17 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
   useEffect(() => {
     if (computation) {
         setSwappedItems(new Array(computation.items.length).fill(null));
-        // Load initial challenge progress when results are displayed
         const progress = storageService.getWeeklyChallengeProgress();
         setChallengeProgress(progress.savedCalories);
+        resultItemRefs.current = resultItemRefs.current.slice(0, items.length);
     }
-  }, [computation]);
+  }, [computation, items.length]);
 
-  // Effect to update challenge progress whenever swaps change
   useEffect(() => {
-    // Calculate total calories saved from current swaps
     const totalSaved = swappedItems.reduce((acc, currentSwap, index) => {
         if (currentSwap) {
             const originalItem = items[index];
             const diff = originalItem.calories_kcal - currentSwap.calories_kcal;
-            // Only count positive savings
             return acc + (diff > 0 ? diff : 0);
         }
         return acc;
@@ -130,14 +134,27 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
 
     setChallengeProgress(totalSaved);
 
-    // Save to local storage
     const currentProgress = storageService.getWeeklyChallengeProgress();
     storageService.saveWeeklyChallengeProgress({
         ...currentProgress,
         savedCalories: totalSaved,
     });
   }, [swappedItems, items]);
+  
+  useEffect(() => {
+    if (highlightedItemIndex !== null) {
+      setTimeout(() => {
+        resultItemRefs.current[highlightedItemIndex]?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }, 100); 
+    }
+  }, [highlightedItemIndex]);
 
+  const handleChartSliceClick = (index: number | null) => {
+    setHighlightedItemIndex(prev => (prev === index ? null : index));
+  };
 
   const calculateBurnMinutes = (calories: number) => {
     const weight = user.weight_kg ?? meta.defaults.weight_kg;
@@ -169,15 +186,14 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
     const element = document.getElementById('pdf-content');
     if (!element) return;
   
-    // Temporarily increase resolution for better quality
     const originalWidth = element.style.width;
     element.style.width = '1024px';
   
     try {
       const canvas = await html2canvas(element, {
-        scale: 2, // Increase scale for higher DPI
+        scale: 2, 
         useCORS: true,
-        backgroundColor: '#18181b', // zinc-950
+        backgroundColor: '#18181b',
         logging: false
       });
   
@@ -201,7 +217,38 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
       setIsPdfLoading(false);
     }
   };
+
+  const validateEmail = (email: string): boolean => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateEmail(email)) {
+      setEmailError(null);
+      setEmailCtaState('success');
+      try {
+        await addContactToGoHighLevel(email);
+      } catch (error) {
+        console.error("Adding contact to GHL from results failed", error);
+      }
+    } else {
+      setEmailError("Please enter a valid email address.");
+    }
+  };
   
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (emailError) {
+      setEmailError(null);
+    }
+    setEmail(e.target.value);
+  }
+
+  const emailInputClasses = `flex-grow bg-zinc-800 border rounded-lg py-3 px-4 text-white placeholder-zinc-500 focus:ring-2 focus:border-amber-400 transition ${
+    emailError
+      ? 'border-red-500 focus:ring-red-500'
+      : 'border-zinc-700 focus:ring-amber-400'
+  }`;
 
   return (
     <>
@@ -248,6 +295,51 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
                         <p className="text-sm text-zinc-400">Steps to Burn</p>
                     </div>
                 </div>
+                 <div className="mt-6">
+                    {emailCtaState === 'button' && (
+                        <button
+                            onClick={() => setEmailCtaState('form')}
+                            className="w-full flex items-center justify-center gap-3 py-3 px-6 bg-zinc-800 border-2 border-amber-400 text-amber-400 font-bold text-md rounded-xl shadow-lg shadow-amber-500/10 hover:bg-amber-400 hover:text-zinc-900 transition-all duration-300 group"
+                        >
+                            <MailIcon className="w-6 h-6 text-amber-400 group-hover:text-zinc-900 transition-colors duration-300" />
+                            Email me this full report and get daily insights
+                        </button>
+                    )}
+                    {emailCtaState === 'form' && (
+                        <div className="animate-pop-in">
+                            <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3">
+                                <input
+                                type="email"
+                                value={email}
+                                onChange={handleEmailChange}
+                                placeholder="your.email@example.com"
+                                required
+                                className={emailInputClasses}
+                                aria-label="Email for report and newsletter"
+                                aria-invalid={!!emailError}
+                                aria-describedby={emailError ? "email-error-results" : undefined}
+                                />
+                                <button
+                                type="submit"
+                                className="py-3 px-6 bg-amber-400 text-zinc-900 font-bold rounded-lg hover:bg-amber-300 transition-colors duration-200"
+                                >
+                                Send Report
+                                </button>
+                            </form>
+                            {emailError && (
+                                <p id="email-error-results" className="text-red-400 text-sm mt-2 text-left" role="alert">
+                                    {emailError}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                    {emailCtaState === 'success' && (
+                        <div className="bg-green-500/10 border border-green-500/30 text-green-300 p-4 rounded-xl flex items-center justify-center gap-3 animate-pop-in">
+                            <CheckIcon className="w-6 h-6" />
+                            <p className="font-semibold">Success! Your report is on its way to your inbox.</p>
+                        </div>
+                    )}
+                </div>
             </section>
 
             <WeeklyChallengeCard progress={challengeProgress} goal={CHALLENGE_GOAL} />
@@ -258,6 +350,9 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
                   {items.map((item, index) => (
                       <ResultItemCard
                           key={index}
+                          // FIX: Correct ref callback to not return a value. An arrow function with an expression body implicitly returns the value of the expression, which is invalid for a ref callback. Use a block body instead.
+                          ref={el => { resultItemRefs.current[index] = el; }}
+                          isHighlighted={index === highlightedItemIndex}
                           item={item}
                           swappedItem={swappedItems[index]}
                           onAddSwap={(food) => handleAddSwap(index, food)}
@@ -307,7 +402,12 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ computation, user, onGa
                         </button>
                     </div>
                 </div>
-                <ReportCharts computation={computation} theme='dark' />
+                <ReportCharts
+                    computation={computation}
+                    theme='dark'
+                    highlightedItemIndex={highlightedItemIndex}
+                    onSliceClick={handleChartSliceClick}
+                />
             </section>
         </div>
     </div>

@@ -44,7 +44,7 @@ const FoodInputCard: React.FC<{
 
   return (
     <div
-      className="bg-zinc-900 p-4 rounded-xl border border-zinc-800 border-t-amber-500/20 relative animate-pop-in transition-all duration-200 hover:scale-[1.02] hover:border-zinc-700"
+      className={`bg-zinc-900 p-4 rounded-xl border border-zinc-800 border-t-amber-500/20 relative animate-pop-in transition-all duration-200 hover:scale-[1.02] hover:border-zinc-700 food-input-card-${index}`}
       style={{ animationDelay: `${index * 80}ms` }}
     >
       <div className="grid grid-cols-6 gap-x-4 gap-y-3">

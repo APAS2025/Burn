@@ -71,28 +71,46 @@ const EatVsBurnChart: React.FC<{
   );
 };
 
-const CalorieDonutChart: React.FC<{
-  items: Computation['items'];
-  totalCalories: number;
-  theme: 'dark' | 'light';
-}> = ({ items, totalCalories, theme }) => {
+// --- New SVG Donut Chart Implementation ---
+const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
+  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+  return {
+    x: centerX + radius * Math.cos(angleInRadians),
+    y: centerY + radius * Math.sin(angleInRadians),
+  };
+};
+
+const describeArc = (x: number, y: number, radius: number, startAngle: number, endAngle: number) => {
+  const start = polarToCartesian(x, y, radius, endAngle);
+  const end = polarToCartesian(x, y, radius, startAngle);
+
+  // if the arc is a full circle, SVG has trouble, so we make it slightly less than full.
+  if (endAngle - startAngle >= 360) {
+    endAngle = 359.99;
+  }
+  
+  const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+  const d = ['M', start.x, start.y, 'A', radius, radius, 0, largeArcFlag, 0, end.x, end.y].join(' ');
+  return d;
+};
+
+interface CalorieDonutChartProps {
+    items: Computation['items'];
+    totalCalories: number;
+    theme: 'dark' | 'light';
+    highlightedItemIndex: number | null;
+    onSliceClick: (index: number | null) => void;
+}
+
+const CalorieDonutChart: React.FC<CalorieDonutChartProps> = ({ items, totalCalories, theme, highlightedItemIndex, onSliceClick }) => {
   if (totalCalories === 0) return null;
 
   const colorPalette = theme === 'dark' ? CHART_COLORS_DARK : CHART_COLORS_LIGHT;
-
-  let cumulativePercent = 0;
-  const gradientParts = items.map((item, index) => {
-    const percent = (item.calories_kcal / totalCalories) * 100;
-    const color = colorPalette[index % colorPalette.length];
-    const start = cumulativePercent;
-    cumulativePercent += percent;
-    const end = cumulativePercent;
-    return `${color} ${start}% ${end}%`;
-  }).join(', ');
-  
-  const gradientStyle = {
-    background: `conic-gradient(${gradientParts})`,
-  };
+  const size = 160;
+  const strokeWidth = 25;
+  const radius = (size - strokeWidth) / 2;
+  const center = size / 2;
+  let cumulativeAngle = 0;
 
   const textStyles = {
     dark: {
@@ -107,20 +125,39 @@ const CalorieDonutChart: React.FC<{
     }
   }[theme];
   
-  const containerBg = theme === 'dark' ? 'bg-zinc-900/60' : 'bg-slate-100';
-
   return (
     <div className="w-full">
         <h4 className={`text-lg font-semibold mb-3 text-center ${textStyles.totalColor}`}>Calorie Breakdown</h4>
         <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="relative w-40 h-40 flex-shrink-0">
-                <div
-                    className="w-full h-full rounded-full"
-                    style={gradientStyle}
-                    role="img"
-                    aria-label="Calorie breakdown by food item"
-                ></div>
-                <div className={`absolute inset-3 rounded-full ${theme === 'dark' ? 'bg-zinc-800/80' : 'bg-slate-50'}`}></div>
+                <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
+                    <g>
+                        {items.map((item, index) => {
+                            const percentage = (item.calories_kcal / totalCalories) * 360;
+                            const startAngle = cumulativeAngle;
+                            const endAngle = cumulativeAngle + percentage;
+                            cumulativeAngle += percentage;
+                            const isHighlighted = highlightedItemIndex === index;
+
+                            return (
+                                <path
+                                    key={index}
+                                    d={describeArc(center, center, radius, startAngle, endAngle - 1)}
+                                    fill="none"
+                                    stroke={colorPalette[index % colorPalette.length]}
+                                    strokeWidth={strokeWidth}
+                                    onClick={() => onSliceClick(index)}
+                                    className="cursor-pointer transition-all duration-300"
+                                    style={{
+                                        transformOrigin: 'center center',
+                                        transform: isHighlighted ? 'scale(1.05)' : 'scale(1)',
+                                        opacity: highlightedItemIndex === null || isHighlighted ? 1 : 0.5,
+                                    }}
+                                />
+                            );
+                        })}
+                    </g>
+                </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                     <span className={`text-3xl font-bold ${textStyles.totalColor}`}>{totalCalories.toLocaleString()}</span>
                     <span className={`text-xs ${textStyles.labelColor}`}>Total kcal</span>
@@ -128,16 +165,24 @@ const CalorieDonutChart: React.FC<{
             </div>
             <div className="flex-1 w-full">
                 <ul className="space-y-2 text-sm">
-                    {items.map((item, index) => (
-                        <li key={item.name} className="flex items-center gap-2">
-                            <span
-                                className="w-3 h-3 rounded-full"
-                                style={{ backgroundColor: colorPalette[index % colorPalette.length] }}
-                            ></span>
-                            <span className={`flex-1 truncate ${textStyles.legendColor}`}>{item.name}</span>
-                            <span className={`font-semibold ${textStyles.legendColor}`}>{item.calories_kcal} kcal</span>
-                        </li>
-                    ))}
+                    {items.map((item, index) => {
+                        const isHighlighted = highlightedItemIndex === index;
+                        return (
+                            <li
+                                key={item.name}
+                                className={`flex items-center gap-2 p-1 rounded-md cursor-pointer transition-all duration-300 ${isHighlighted ? 'bg-zinc-700' : 'bg-transparent hover:bg-zinc-700/50'}`}
+                                onClick={() => onSliceClick(index)}
+                                style={{ opacity: highlightedItemIndex === null || isHighlighted ? 1 : 0.7 }}
+                            >
+                                <span
+                                    className="w-3 h-3 rounded-full flex-shrink-0"
+                                    style={{ backgroundColor: colorPalette[index % colorPalette.length] }}
+                                ></span>
+                                <span className={`flex-1 truncate ${textStyles.legendColor}`}>{item.name}</span>
+                                <span className={`font-semibold ${textStyles.legendColor}`}>{item.calories_kcal} kcal</span>
+                            </li>
+                        );
+                    })}
                 </ul>
             </div>
         </div>
@@ -146,7 +191,14 @@ const CalorieDonutChart: React.FC<{
 };
 
 
-const ReportCharts: React.FC<{ computation: Computation, theme: 'dark' | 'light' }> = ({ computation, theme }) => {
+interface ReportChartsProps {
+    computation: Computation;
+    theme: 'dark' | 'light';
+    highlightedItemIndex: number | null;
+    onSliceClick: (index: number | null) => void;
+}
+
+const ReportCharts: React.FC<ReportChartsProps> = ({ computation, theme, highlightedItemIndex, onSliceClick }) => {
   const { totals, items } = computation;
   const containerBg = theme === 'dark' ? 'bg-zinc-800/50' : 'bg-slate-50';
   const containerBorder = theme === 'dark' ? '' : 'border border-slate-200';
@@ -155,7 +207,13 @@ const ReportCharts: React.FC<{ computation: Computation, theme: 'dark' | 'light'
     <div className={`p-4 rounded-xl ${containerBg} ${containerBorder}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <EatVsBurnChart eatMinutes={totals.eat_minutes} burnMinutes={totals.burn_minutes} theme={theme} />
-            <CalorieDonutChart items={items} totalCalories={totals.calories_kcal} theme={theme} />
+            <CalorieDonutChart
+                items={items}
+                totalCalories={totals.calories_kcal}
+                theme={theme}
+                highlightedItemIndex={highlightedItemIndex}
+                onSliceClick={onSliceClick}
+            />
         </div>
     </div>
   );

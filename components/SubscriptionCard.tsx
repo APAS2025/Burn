@@ -1,21 +1,45 @@
-
 import React, { useState } from 'react';
 import { MailIcon, CheckCircleIcon } from './Icons';
 import InsightsMarquee from './InsightsMarquee';
+import { addContactToGoHighLevel } from '../services/goHighLevelService';
 
 const SubscriptionCard: React.FC = () => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'success'>('idle');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateEmail = (email: string): boolean => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && email.includes('@')) {
-      // Simulate API call
+    if (validateEmail(email)) {
+      setError(null);
       setStatus('success');
-      // In a real app, you'd call your backend here.
-      // e.g., subscribeUser(email);
+      try {
+        await addContactToGoHighLevel(email);
+      } catch (error) {
+        // Silently fail for now to not disrupt the user's experience.
+        console.error("Subscription to GHL failed", error);
+      }
+    } else {
+      setError('Please enter a valid email address.');
     }
   };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (error) {
+      setError(null);
+    }
+    setEmail(e.target.value);
+  };
+
+  const inputClasses = `flex-grow bg-zinc-800 border rounded-lg py-3 px-4 text-white placeholder-zinc-500 focus:ring-2 focus:border-amber-400 transition ${
+    error
+      ? 'border-red-500 focus:ring-red-500'
+      : 'border-zinc-700 focus:ring-amber-400'
+  }`;
 
   return (
     <div className="bg-zinc-900 my-16 p-8 rounded-2xl border border-zinc-800 border-t-2 border-t-amber-400 text-center max-w-4xl mx-auto animate-pop-in">
@@ -31,23 +55,32 @@ const SubscriptionCard: React.FC = () => {
 
       <div className="mt-8 max-w-lg mx-auto">
         {status === 'idle' ? (
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your.email@example.com"
-              required
-              className="flex-grow bg-zinc-800 border border-zinc-700 rounded-lg py-3 px-4 text-white placeholder-zinc-500 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition"
-              aria-label="Email for newsletter"
-            />
-            <button
-              type="submit"
-              className="py-3 px-6 bg-amber-400 text-zinc-900 font-bold rounded-lg hover:bg-amber-300 transition-colors duration-200 transform hover:scale-[1.02]"
-            >
-              Get My Daily Tip
-            </button>
-          </form>
+          <div>
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+              <input
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                placeholder="your.email@example.com"
+                required
+                className={inputClasses}
+                aria-label="Email for newsletter"
+                aria-invalid={!!error}
+                aria-describedby={error ? "email-error" : undefined}
+              />
+              <button
+                type="submit"
+                className="py-3 px-6 bg-amber-400 text-zinc-900 font-bold rounded-lg hover:bg-amber-300 transition-colors duration-200 transform hover:scale-[1.02]"
+              >
+                Get My Daily Tip
+              </button>
+            </form>
+            {error && (
+              <p id="email-error" className="text-red-400 text-sm mt-2 text-left" role="alert">
+                {error}
+              </p>
+            )}
+          </div>
         ) : (
           <div className="bg-green-500/10 border border-green-500/30 text-green-300 p-4 rounded-xl flex items-center justify-center gap-3 animate-pop-in">
             <CheckCircleIcon className="w-6 h-6" />

@@ -198,3 +198,12 @@ export interface Reward {
   pointsRequired: number;
   rewardValue: string; // e.g., discount code
 }
+
+export type OnboardingStepPosition = 'top' | 'bottom' | 'left' | 'right' | 'center';
+
+export interface OnboardingStep {
+  targetSelector: string | null;
+  title: string;
+  content: string;
+  position?: OnboardingStepPosition;
+}

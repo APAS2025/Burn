@@ -66,7 +66,7 @@ const ShareAppButton: React.FC = () => {
   ];
 
   return (
-    <div className="fixed bottom-8 right-8 z-40 flex flex-col items-center gap-4">
+    <div className="fixed bottom-24 left-4 lg:bottom-8 lg:right-8 lg:left-auto z-40 flex flex-col items-center gap-4">
         <div className={`flex flex-col-reverse items-center gap-4 transition-all duration-300 ease-in-out`}>
             {shareButtons.map((button) => (
                  <button

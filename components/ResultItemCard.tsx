@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { ComputationItem, FoodItem, SwapItem } from '../types';
 import { HeartIcon, XIcon, PlusIcon, DatabaseIcon, CameraIcon, CutleryIcon, FlameIcon } from './Icons';
 
@@ -9,6 +9,7 @@ interface ResultItemCardProps {
   onRemoveSwap: () => void;
   onRequestSwapFromDB: () => void;
   onRequestSwapFromCamera: () => void;
+  isHighlighted?: boolean;
 }
 
 const formatMinutes = (minutes: number) => {
@@ -29,7 +30,7 @@ const StatDisplay: React.FC<{ icon: React.ReactNode, value: string, label: strin
     </div>
 );
 
-const ResultItemCard: React.FC<ResultItemCardProps> = ({ item, swappedItem, onAddSwap, onRemoveSwap, onRequestSwapFromDB, onRequestSwapFromCamera }) => {
+const ResultItemCard = forwardRef<HTMLDivElement, ResultItemCardProps>(({ item, swappedItem, onAddSwap, onRemoveSwap, onRequestSwapFromDB, onRequestSwapFromCamera, isHighlighted }, ref) => {
     const [isSwapUIOpen, setIsSwapUIOpen] = useState(false);
     const [manualSwap, setManualSwap] = useState({ name: '', calories_kcal: '' });
 
@@ -60,7 +61,10 @@ const ResultItemCard: React.FC<ResultItemCardProps> = ({ item, swappedItem, onAd
     const burn_diff = swappedItem ? item.burn_minutes - swappedItem.burn_minutes : 0;
 
     return (
-        <div className="bg-zinc-800/50 p-5 rounded-2xl border border-zinc-800/50 transition-all duration-300">
+        <div 
+            ref={ref}
+            className={`bg-zinc-800/50 p-5 rounded-2xl border transition-all duration-300 ${isHighlighted ? 'scale-[1.03] border-amber-400 shadow-lg shadow-amber-500/10' : 'border-zinc-800/50'}`}
+        >
             {swappedItem ? (
                 // --- COMPARISON VIEW ---
                 <div>
@@ -146,6 +150,6 @@ const ResultItemCard: React.FC<ResultItemCardProps> = ({ item, swappedItem, onAd
             </div>
         </div>
     );
-};
+});
 
 export default ResultItemCard;
